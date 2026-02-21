@@ -160,7 +160,8 @@
             <div style="font-size:12px; font-weight:bold;">Czcionka: <span id="font-size-val">18px</span></div>
             <input type="range" id="font-size-slider" min="12" max="60" value="18" oninput="setFontSize(this.value)">
             
-
+            <button onclick="toggleChordsDisplay()" id="btn-toggle-chords">Ukryj akordy</button>
+            <button onclick="toggleChordStyle()" id="btn-chord-style">Styl: Polski (H)</button>
             <button onclick="toggleDarkMode()"><i class="fas fa-moon"></i> Tryb nocny</button>
             
             <div id="mqtt-sync-section" style="border: 1px solid var(--border-color); padding: 10px; border-radius: 5px; margin-top: 5px; background: rgba(0,0,0,0.02);">
@@ -174,6 +175,15 @@
                 </div>
                 <div id="mqtt-status-text" style="font-size:10px; color:green; margin-top:5px; min-height:12px;"></div>
             </div>
+
+            <hr style="opacity:0.2">
+            <button onclick="startEditCurrent()">Edytuj piosenkę</button>
+            <button onclick="startNewSong()">Dodaj nową</button>
+            <button onclick="document.getElementById('import-file').click()">Importuj JSON</button>
+            <input type="file" id="import-file" style="display:none" onchange="importJSON(this)">
+            <button onclick="exportJSON()">Pobierz JSON</button>
+            <button onclick="exportAllJPG()" style="background:var(--accent-success); color:white;">Eksport JPG</button>
+            <button onclick="resetFromServer()" style="background:#dc3545; color:white;">Resetuj z serwera</button>
         </div>
 
         <div id="song-capture-area">
