@@ -1,0 +1,15 @@
+{
+  "name": "Muzycznik Deme",
+  "short_name": "Muzycznik",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/?size=48&id=h4yHYv3voiN1&format=png&color=228BE6",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
