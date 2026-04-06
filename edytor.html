@@ -160,7 +160,7 @@
                 <div class="grid-layout">
                     <div class="field"><label>Gatunek (Genre)</label><input type="text" id="edit-genre" oninput="save()"></div>
                     <div class="field"><label>Tonacja (Key)</label><input type="text" id="edit-key" oninput="save()"></div>
-                    <div class="field"><label>Tempo (BPM)</label><input type="text" id="edit-tempo" oninput="save()"></div>
+                    <div class="field"><label>Tempo (BPM)</label><input type="text" id="edit-BPM" oninput="save()"></div>
                 </div>
 
                 <div class="field">
@@ -251,7 +251,7 @@
         document.getElementById('edit-vocal').value = s.vocal_type || "male";
         document.getElementById('edit-genre').value = s.genre || "";
         document.getElementById('edit-key').value = s.key || "";
-        document.getElementById('edit-tempo').value = s.tempo || "";
+        document.getElementById('edit-BPM').value = s.BPM || "";
         document.getElementById('edit-chords').value = s.chords || "";
         document.getElementById('edit-notes').value = s.notes || "";
         document.getElementById('lyrics-editor').innerHTML = s.lyrics || "";
@@ -267,7 +267,7 @@
         s.vocal_type = document.getElementById('edit-vocal').value;
         s.genre = document.getElementById('edit-genre').value;
         s.key = document.getElementById('edit-key').value;
-        s.tempo = document.getElementById('edit-tempo').value;
+        s.BPM = document.getElementById('edit-BPM').value;
         s.chords = document.getElementById('edit-chords').value;
         s.notes = document.getElementById('edit-notes').value;
         s.lyrics = document.getElementById('lyrics-editor').innerHTML;
@@ -282,7 +282,7 @@
     }
 
     function addNewSong() {
-        const n = { title: "Nowa piosenka", artist: "Artysta", vocal_type: "male", lyrics: "", chords: "", genre: "", notes: "", key: "", tempo: "" };
+        const n = { title: "Nowa piosenka", artist: "Artysta", vocal_type: "male", lyrics: "", chords: "", genre: "", notes: "", key: "", BPM: "" };
         songs.unshift(n);
         currentIdx = 0;
         load(0);
