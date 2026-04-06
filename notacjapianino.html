@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zapis Dźwięków - Pro Notatnik</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --accent-color: #007bff;
+            --border-color: #dee2e6;
+            --success-color: #28a745;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        input#song-title {
+            font-size: 2rem;
+            font-weight: bold;
+            border: none;
+            border-bottom: 2px solid var(--border-color);
+            background: transparent;
+            text-align: center;
+            width: 100%;
+            outline: none;
+            padding: 10px 0;
+            margin-bottom: 15px;
+        }
+
+        .file-ops {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: #eee;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .motif {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .motif-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .motif-title {
+            font-weight: 600;
+            border: none;
+            font-size: 1.2rem;
+            outline: none;
+            flex-grow: 1;
+        }
+
+        .hands-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .hand-section h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: #6c757d;
+        }
+
+        textarea {
+            width: 100%;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+            line-height: 1.2;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 10px;
+            resize: vertical;
+            min-height: 150px;
+            white-space: pre;
+            box-sizing: border-box;
+        }
+
+        .template-btns {
+            margin-bottom: 8px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        select {
+            font-size: 0.8rem;
+            padding: 4px;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-add { background-color: var(--accent-color); color: white; }
+        .btn-print { background-color: var(--success-color); color: white; }
+        .btn-file { background-color: #6c757d; color: white; }
+        .btn-delete { background-color: #dc3545; color: white; font-size: 0.8rem; margin-left: 10px; }
+
+        input[type="file"] { display: none; }
+
+        @media print {
+            .file-ops, .controls, .btn-delete, .template-btns { display: none !important; }
+            body { background-color: white; padding: 0; }
+            .motif { box-shadow: none; border: 1px solid #000; page-break-inside: avoid; }
+            textarea { border: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <input type="text" id="song-title" placeholder="Tytuł piosenki..." value="Nowa Piosenka">
+        
+        <div class="file-ops">
+            <button class="btn-file" onclick="exportToFile()">Zapisz do pliku (Export)</button>
+            <button class="btn-file" onclick="document.getElementById('importFile').click()">Wczytaj z pliku (Import)</button>
+            <input type="file" id="importFile" accept=".txt" onchange="importFromFile(event)">
+        </div>
+    </header>
+
+    <div id="motifs-list"></div>
+
+    <div class="controls">
+        <button class="btn-add" onclick="addMotif()">+ Dodaj nowy motyw</button>
+        <button class="btn-print" onclick="window.print()">Drukuj arkusz</button>
+    </div>
+</div>
+
+<script>
+    const tabs = {
+        g6: "E|--------------------------|\nB|--------------------------|\nG|--------------------------|\nD|--------------------------|\nA|--------------------------|\nE|--------------------------|",
+        b5: "G|--------------------------|\nD|--------------------------|\nA|--------------------------|\nE|--------------------------|\nB|--------------------------|",
+        b4: "G|--------------------------|\nD|--------------------------|\nA|--------------------------|\nE|--------------------------|"
+    };
+
+    const chords = {
+        C: "Palec:  1 3 5\n        G C E\nDźwięk: E G C\n        C E G",
+        G: "Palec:  1 3 5\n        D G B\nDźwięk: B D G\n        G B D",
+        D: "Palec:  1 2 3\n        A D F#\nDźwięk: F# A D\n        D F# A",
+        Am: "Palec:  1 3 5\n        E A C\nDźwięk: C E A\n        A C E",
+        E: "Palec:  1 2 3\n        B E G#\nDźwięk: G# B E\n        E G# B"
+    };
+
+    function addMotif(title = "", right = "", left = "") {
+        const list = document.getElementById('motifs-list');
+        const newMotif = document.createElement('div');
+        newMotif.className = 'motif';
+        newMotif.innerHTML = `
+            <div class="motif-header">
+                <input type="text" class="motif-title" placeholder="Nazwa motywu" value="${title}">
+                <button class="btn-delete" onclick="this.parentElement.parentElement.remove()">Usuń</button>
+            </div>
+            <div class="hands-container">
+                <div class="hand-section">
+                    <h4>Prawa Ręka</h4>
+                    <div class="template-btns">
+                        <select onchange="applyTab(this)">
+                            <option value="" disabled selected>Wybierz TAB...</option>
+                            <option value="g6">Gitara 6 strun</option>
+                            <option value="b4">Bas 4 struny</option>
+                            <option value="b5">Bas 5 strun</option>
+                        </select>
+                        <select onchange="applyChord(this)">
+                            <option value="" disabled selected>Wybierz Akord...</option>
+                            <option value="C">C-dur</option>
+                            <option value="G">G-dur</option>
+                            <option value="D">D-dur</option>
+                            <option value="Am">a-moll</option>
+                            <option value="E">E-dur</option>
+                        </select>
+                    </div>
+                    <textarea class="right-hand">${right}</textarea>
+                </div>
+                <div class="hand-section">
+                    <h4>Lewa Ręka</h4>
+                    <div class="template-btns">
+                        <select onchange="applyTab(this)">
+                            <option value="" disabled selected>Wybierz TAB...</option>
+                            <option value="g6">Gitara 6 strun</option>
+                            <option value="b4">Bas 4 struny</option>
+                            <option value="b5">Bas 5 strun</option>
+                        </select>
+                        <select onchange="applyChord(this)">
+                            <option value="" disabled selected>Wybierz Akord...</option>
+                            <option value="C">C-dur</option>
+                            <option value="G">G-dur</option>
+                            <option value="D">D-dur</option>
+                            <option value="Am">a-moll</option>
+                            <option value="E">E-dur</option>
+                        </select>
+                    </div>
+                    <textarea class="left-hand">${left}</textarea>
+                </div>
+            </div>
+        `;
+        list.appendChild(newMotif);
+    }
+
+    function applyTab(sel) {
+        if (!sel.value) return;
+        const area = sel.parentElement.nextElementSibling;
+        area.value = tabs[sel.value];
+        sel.selectedIndex = 0;
+    }
+
+    function applyChord(sel) {
+        if (!sel.value) return;
+        const area = sel.parentElement.nextElementSibling;
+        area.value = chords[sel.value];
+        sel.selectedIndex = 0;
+    }
+
+    function exportToFile() {
+        const data = {
+            title: document.getElementById('song-title').value,
+            motifs: []
+        };
+        document.querySelectorAll('.motif').forEach(m => {
+            data.motifs.push({
+                name: m.querySelector('.motif-title').value,
+                right: m.querySelector('.right-hand').value,
+                left: m.querySelector('.left-hand').value
+            });
+        });
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = data.title.replace(/\s+/g, '_') + ".txt";
+        a.click();
+    }
+
+    function importFromFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                document.getElementById('song-title').value = data.title;
+                document.getElementById('motifs-list').innerHTML = "";
+                data.motifs.forEach(m => addMotif(m.name, m.right, m.left));
+            } catch (err) { alert("Błąd pliku."); }
+        };
+        reader.readAsText(file);
+    }
+
+    addMotif("Intro");
+</script>
+
+</body>
+</html>
