@@ -598,19 +598,27 @@
                 try {
                     const data = JSON.parse(message.toString());
                     
-                    // Aktualizacja ulubionych u słuchacza, jeśli lider je przesłał
+                    // 1. Aktualizacja ulubionych piosenek od lidera w czasie rzeczywistym
                     if (data.favs && Array.isArray(data.favs)) {
-                        favorites = data.favs;
-                        localStorage.setItem('favSongs', JSON.stringify(favorites));
-                        renderList(); // Odśwież widok listy, aby gwiazdki się zaktualizowały
+                        favorites = data.favs; // Nadpisujemy lokalną tablicę nową listą od lidera
+                        localStorage.setItem('favSongs', JSON.stringify(favorites)); // Zapisujemy w pamięci podręcznej
+                        
+                        // KLUCZOWY MOMENT: Wywołujemy renderList(). 
+                        // Jeśli słuchacz jest w zakładce "Ulubione", lista natychmiast dopisze/usunie piosenki na ekranie.
+                        renderList(); 
                     }
 
-                    // Logika zmiany piosenki (zabezpieczona przed brakiem title, gdy zmieniamy tylko ulubione)
+                    // 2. Automatyczne otwieranie piosenki wybranej przez lidera
                     if (data.title) {
                         const found = allSongs.find(s => s.title === data.title);
-                        if (found) { transpose = data.t; selectSong(found.id, true); }
+                        if (found) { 
+                            transpose = data.t; 
+                            selectSong(found.id, true); 
+                        }
                     }
-                } catch (e) { console.error("MQTT Error", e); }
+                } catch (e) { 
+                    console.error("MQTT Error", e); 
+                }
             }
         });
     }
