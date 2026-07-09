@@ -502,7 +502,15 @@
         if(document.getElementById('font-size-slider')) document.getElementById('font-size-slider').value = currentFontSize;
     }
 
-    function toggleFav(e, id) { e.stopPropagation(); favorites.includes(id) ? favorites = favorites.filter(f=>f!==id) : favorites.push(id); localStorage.setItem('favSongs', JSON.stringify(favorites)); renderList();
+    function toggleFav(e, id) { 
+        e.stopPropagation(); 
+        favorites.includes(id) ? favorites = favorites.filter(f=>f!==id) : favorites.push(id); 
+        localStorage.setItem('favSongs', JSON.stringify(favorites)); 
+        renderList();
+        // Jeśli to lider, po zmianie ulubionych wyślij aktualizację przez MQTT
+        if (isMaster) {
+            broadcastState();
+        }
     }
     function openSettings(e) { e.stopPropagation(); document.getElementById('settings-menu').classList.toggle('active'); }
     function toggleChordsDisplay() { showChords = !showChords; updateView();
@@ -589,8 +597,19 @@
             if (!isMaster && topic === mqttTopic) {
                 try {
                     const data = JSON.parse(message.toString());
-                    const found = allSongs.find(s => s.title === data.title);
-                    if (found) { transpose = data.t; selectSong(found.id, true); }
+                    
+                    // Aktualizacja ulubionych u słuchacza, jeśli lider je przesłał
+                    if (data.favs && Array.isArray(data.favs)) {
+                        favorites = data.favs;
+                        localStorage.setItem('favSongs', JSON.stringify(favorites));
+                        renderList(); // Odśwież widok listy, aby gwiazdki się zaktualizowały
+                    }
+
+                    // Logika zmiany piosenki (zabezpieczona przed brakiem title, gdy zmieniamy tylko ulubione)
+                    if (data.title) {
+                        const found = allSongs.find(s => s.title === data.title);
+                        if (found) { transpose = data.t; selectSong(found.id, true); }
+                    }
                 } catch (e) { console.error("MQTT Error", e); }
             }
         });
@@ -599,7 +618,12 @@
     function broadcastState() {
         if (isMaster && mqttClient && mqttClient.connected) {
             const song = allSongs.find(s => s.id === currentId);
-            if (song) mqttClient.publish(mqttTopic, JSON.stringify({ title: song.title, t: transpose }), { retain: true });
+            const payload = { 
+                title: song ? song.title : null, 
+                t: transpose,
+                favs: favorites // Dodajemy aktualną listę ulubionych
+            };
+            mqttClient.publish(mqttTopic, JSON.stringify(payload), { retain: true });
         }
     }
 
