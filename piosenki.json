@@ -2012,6 +2012,18 @@
     "lyrics": "wstęp - refren instrumentalnie\n\n[C]\nBrzydal był i niezły drań,\n[F]\nA sukcesy miał u pań\n[C] [G] [C]\nJak on to robił jak\n[C]\nPrzez to takie wzięcie miał,\n[F]\nŻe zaklęcie proste znał,\n[D]                       [G]\nCo brzmi mniej więcej tak ooooo\n\nRef:\n[C]\nMoja droga, ja cię kocham\nTak kocham że ho ho\n[G]\nMoja droga, ja cię kocham\nI one wierzą w to\n[C]\nKocham ciebie całym sercem\n[A]  [D]\nTo prawda żywy fakt\n[F]    [C]   [A]      [d]\nMyślałem, że prowadzę grę,\n[G]          [C]\nA wyszło coś nie tak\n\nW tej metodzie prostej zbyt\nJest szaleństwo ale nikt\nNie pozna na nim się\nChyba że spróbuje i\nSam nim minie kilka dni\nUwierzy w slowa te oooooo..\n\nRef.\nMoja droga ja cię kocham\nTo mej miłości pieśń\nMoja droga ja cię kocham\nAż mi to trudno znieść\nKocham ciebie całym sercem\nBo nie ma takich kłamstw\nCo prawdą by\nNie były, gdy\nPowtarzać setny raz\nCo prawdą by\nNie były, gdy\nPowtarzać setny raz oooooo...\n\nMoja droga ja cię kocham\nTo mej miłości pieśń\nMoja droga ja cię kocham\nAż mi to trudno znieść\nKocham ciebie całym sercem\nTo prawda żywy fakt\nMyślałem, że prowadzę grę,\nA wyszło coś nie tak\n"
   },
   {
+    "title": "Daj mi noc",
+    "artist": "TulskY",
+    "vocal_type": "male",
+    "lyrics": "<font color=\"#e74c3c\">Daj mi noc, jedną noc\nJeden krok, jeden gest\nMoże wszystko to wystarczy mi do jutra\nDaj mi noc, jedna noc\nJeden śmiech, jeden szept\nKażda noc bez Ciebie taka pusta</font>\n\nBliska moich myśli jednak tak daleka\nNiby wszystko w życiu mam, ale ciągle czekam\nBliska moich myśli, ale wciąż nie moja\nNiby śmieje sie przez łzy, a me serce wola\n<font color=\"#e74c3c\">\nDaj mi noc, jedną noc\nJeden krok, jeden gest\nMoże wszystko to wystarczy mi do jutra\nDaj mi noc, jedna noc\nJeden śmiech, Jeden szept\nKażda noc bez Ciebie taka pusta\n</font>\nBlisko mego serca, a daleko od dłoni\nChciałbym znów Ciebie przytulić\nCzas ucieka czas nas goni.\nWszystko w życiu juz zdobyłem, a i tak mi brak jednego Ciebie obok tu przy sobie Twego zostań szeptanego.\n\n<font color=\"#e74c3c\">Daj mi noc, jedną noc\nJeden krok, jeden gest\nMoże wszystko to wystarczy mi do jutra\nDaj mi noc, jedna noc\nJeden śmiech, Jeden szept\nKażda noc bez Ciebie taka pusta\n</font>\nBliska myślom, daleka dłoniom, tylko Ciebie mi brakuje, zostań chwilę tylko moment może serce to zrozumie\n\n<font color=\"#e74c3c\">Daj mi noc, jedną noc\nJeden krok, jeden gest\nMoże wszystko to wystarczy mi do jutra\nDaj mi noc, jedna noc\nJeden śmiech, jeden szept\nKażda noc bez Ciebie taka pusta</font><br>",
+    "chords": "A f# h D E",
+    "genre": "",
+    "notes": "",
+    "key": "",
+    "BPM": "",
+    "id": "piosenki.json_179"
+  },
+  {
     "title": "Kawałek do tańca",
     "artist": "Poparzeni kawą trzy",
     "vocal_type": "male",
@@ -2020,6 +2032,7 @@
     "genre": "",
     "notes": "",
     "key": "",
+    "id": "piosenki.json_180",
     "BPM": "150"
   }
 ]
