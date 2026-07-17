@@ -2032,7 +2032,19 @@
     "genre": "",
     "notes": "",
     "key": "",
-    "BPM": "150",
+    "bpm": "150",
     "id": "piosenki.json_180"
+  },
+  {
+    "title": "Zawsze tam gdzie ty",
+    "artist": "Lady Pank",
+    "vocal_type": "male",
+    "lyrics": "Zamienię każdy oddech w niespokojny wiatr\nBy zabrał mnie z powrotem, tam gdzie masz swój świat\nPoskładam wszystkie szepty w jeden ciepły krzyk\nŻeby znalazł Cię aż tam, gdzie pochowałaś sny\n\nJuż teraz wiem, że dni są tylko po to\nBy do Ciebie wracać każdą nocą złotą\nNie znam słów, co mają jakiś większy sens\nJeśli tylko jedno, jedno tylko wiem:\nByć tam, zawsze tam, gdzie Ty\n\nNie pytaj mnie o jutro, to za tysiąc lat\nPłyniemy białą łódką w niezbadany czas\nPoskładam nasze szepty w jeden ciepły krzyk\nBy już nie uciekły nam, by wysuszyły łzy\n\nJuż teraz wiem, że dni są tylko po to\nBy do Ciebie wracać każdą nocą złotą\nNie znam słów, co mają jakiś większy sens\nJeśli tylko jedno, jedno tylko wiem:\nByć tam, zawsze tam, gdzie Ty\n\nJuż teraz wiem, że dni są tylko po to\nBy do Ciebie wracać każdą nocą złotą\nNie znam słów, co mają jakiś większy sens\nJeśli tylko jedno jedno tylko wiem:\nByć tam, zawsze tam, gdzie Ty\nBudzić się i chodzić spać we własnym niebie\nByć tam, zawsze tam, gdzie Ty\nŻegnać się co świt i wracać znów do Ciebie\nByć tam, zawsze tam, gdzie Ty\nBudzić się i chodzić spać we własnym niebie\nByć tam, zawsze tam, gdzie Ty, jeeee\n\nZawsze tam gdzie Ty, jeeee<br>",
+    "chords": "zw \nC a G\nref\nF G C a",
+    "genre": "",
+    "notes": "",
+    "key": "",
+    "bpm": "110"
+    "id": "piosenki.json_181"
   }
 ]
