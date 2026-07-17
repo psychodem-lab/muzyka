@@ -1067,12 +1067,17 @@
     "id": "piosenki.json_88_1766782671506"
   },
   {
-    "id": "piosenki.json_89_1766782671506",
-    "title": "chłopiec sportowiec / Na wierch Marusyny",
+    "id": "piosenki.json_89",
+    "title": "Chłopiec Sportowiec / Na wierch Marusyny",
     "artist": "Góralskie",
     "bpm": 120,
-    "chords": "GD CDG",
-    "lyrics": "<p>Na wierch Marusyny karcma murowano</p><p>Ej jest tam karcmarecka jesce nie tykano 2x</p><p><br></p><p>A ty porumbańcu w tej karcmie nie tańcuj</p><p>ej konie w stajni stojom siodeł się nie bojom 2x</p><p><br></p><p>Karcmarecko moja jo ci karcme zdobie</p><p>ej całom nocke śpiewom i nozkami drobie 2x</p><p><br></p><p>Karcmarecko nasa nie zagasuj łognia</p><p>przydom śwarni chłopcy bedom tończyć do dnia 2x</p><p><br></p><p>Kiej jo se był mały</p><p>Tata mnie kołysoł</p><p>Jo mu nie chcioł usnońć</p><p>Bok ło dziewkach myśloł</p><p>Jo mu nie chcioł usnońć</p><p>Bok ło dziewkach myśloł</p><p><br></p><p>Dziewcynko spręzynko</p><p>Dej sie pocałować</p><p>Jo chłopiec sportowiec</p><p>Nie bydziesz żałować</p><p>Jo chłopiec sportowiec</p><p>Nie bydziesz żałować</p><p>Sukali sukali</p><p>Ziandara dobrego</p><p>Co by se mnie łodwiózł</p><p>Do sąca nowego</p><p>Co by se mnie łodwiózł</p><p>Do sąca nowego</p><p><br></p><p>Siedziłek w areście</p><p>W nowym sącu mieście</p><p>Za jaką przycyne</p><p>Za śwarną dziewcyne</p><p>Za jaką przycyne</p><p>Za śwarną dziewcyne</p><p><br></p><p>Chłopcy muzykańci</p><p>Corno się pod wami</p><p>Syćka się baciary</p><p>A jo między wami</p><p>Syćka się baciary</p><p>A jo między wami</p><p><br></p>"
+    "chords": "G E a D \n\nC D G",
+    "lyrics": "<p>Kiej jo se był mały</p><p>Tata mnie kołysoł</p><p>Jo mu nie chcioł usnońć</p><p>Bok ło dziewkach myśloł</p><p>Jo mu nie chcioł usnońć</p><p>Bok ło dziewkach myśloł</p><p><br></p><p>Dziewcynko spręzynko</p><p>Dej sie pocałować</p><p>Jo chłopiec sportowiec</p><p>Nie bydziesz żałować</p><p>Jo chłopiec sportowiec</p><p>Nie bydziesz żałować</p><p>Sukali sukali</p><p>Ziandara dobrego</p><p>Co by se mnie łodwiózł</p><p>Do sąca nowego</p><p>Co by se mnie łodwiózł</p><p>Do sąca nowego</p><p><br></p><p>Siedziłek w areście</p><p>W nowym sącu mieście</p><p>Za jaką przycyne</p><p>Za śwarną dziewcyne</p><p>Za jaką przycyne</p><p>Za śwarną dziewcyne</p><p><br></p><p>Chłopcy muzykańci</p><p>Corno się pod wami</p><p>Syćka się baciary</p><p>A jo między wami</p><p>Syćka się baciary</p><p>A jo między wami</p><p><br></p><p>Na wierch Marusyny karcma murowano</p><p>Ej jest tam karcmarecka jesce nie tykano 2x</p><p><br></p><p>A ty porumbańcu w tej karcmie nie tańcuj</p><p>ej konie w stajni stojom siodeł się nie bojom 2x</p><p><br></p><p>Karcmarecko moja jo ci karcme zdobie</p><p>ej całom nocke śpiewom i nozkami drobie 2x</p><p><br></p><p>Karcmarecko nasa nie zagasuj łognia</p><p>przydom śwarni chłopcy bedom tończyć do dnia 2x</p><p><br></p>",
+    "vocal_type": "male",
+    "genre": "",
+    "key": "",
+    "BPM": "",
+    "notes": ""
   },
   {
     "title": "Na dworze ciemno",
