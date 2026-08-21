@@ -436,7 +436,8 @@
             const title = (s.title || "").toLowerCase();
             const artist = (s.artist || "").toLowerCase();
             const vocal = (s.vocal_type || "").toLowerCase();
-            if (term === "male" || term === "female") return vocal === term;
+            if (term === "male") return vocal === "male" || vocal === "both";
+            if (term === "female") return vocal === "female" || vocal === "both";
             return title.includes(term) || artist.includes(term);
         });         
         list.innerHTML = filtered.sort((a,b)=>a.title.localeCompare(b.title)).map(s => `
