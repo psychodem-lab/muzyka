@@ -94,6 +94,12 @@
         .editor-wrap { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: white; }
         .toolbar { display: flex; gap: 8px; padding: 12px; background: #f8fafc; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
         .toolbar button { padding: 6px 12px; font-weight: bold; border-radius: 4px; border: 1px solid var(--border); background: white; cursor: pointer; }
+
+        /* Transpose */
+        .transpose-controls { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .transpose-controls .val { font-weight: 800; font-size: 16px; min-width: 44px; text-align: center; cursor: pointer; padding: 4px 6px; border-radius: 6px; background: #f1f5f9; }
+        .preview-box { margin-top: 12px; padding: 16px; background: #0f172a; color: #94a3b8; border-radius: 12px; font-family: monospace; font-size: 15px; line-height: 1.6; }
+        .preview-box h4 { color: #cbd5e1; margin: 0 0 8px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
         
         #lyrics-editor {
             min-height: 600px; padding: 40px; outline: none;
@@ -165,7 +171,18 @@
 
                 <div class="field">
                     <label>Akordy (Chords)</label>
-                    <textarea id="edit-chords" rows="4" oninput="save()" placeholder="Wpisz akordy..."></textarea>
+                    <textarea id="edit-chords" rows="4" oninput="save()" placeholder="Wpisz akordy... (opisy w { } są pomijane przy transpozycji)"></textarea>
+                    <div class="transpose-controls">
+                        <button type="button" class="btn btn-outline" onclick="changeTrans(-1)">&#8722;</button>
+                        <span class="val" id="transpose-val" onclick="resetTrans()" title="Kliknij, by zresetować">0</span>
+                        <button type="button" class="btn btn-outline" onclick="changeTrans(1)">+</button>
+                        <button type="button" class="btn btn-outline" id="btn-chord-style" onclick="toggleChordStyle()">Styl: Polski (H)</button>
+                        <span style="font-size:12px; color:var(--text-muted);">kliknij wartość, by zresetować</span>
+                    </div>
+                    <div class="preview-box">
+                        <h4>Podgląd akordów (z transpozycją)</h4>
+                        <pre id="preview-chords" style="margin:0; white-space:pre-wrap;"></pre>
+                    </div>
                 </div>
                 
                 <div class="field">
@@ -187,6 +204,10 @@
                         <button onclick="cmd('insertHTML', '<p><br></p>')">AKAPIT</button>
                     </div>
                     <div id="lyrics-editor" contenteditable="true" oninput="save()"></div>
+                </div>
+                <div class="preview-box" style="margin-top:12px;">
+                    <h4>Podgląd tekstu (akordy w nawiasach [ ])</h4>
+                    <div id="preview-lyrics" style="white-space:pre-wrap;"></div>
                 </div>
             </div>
         </div>
@@ -255,7 +276,9 @@
         document.getElementById('edit-chords').value = s.chords || "";
         document.getElementById('edit-notes').value = s.notes || "";
         document.getElementById('lyrics-editor').innerHTML = s.lyrics || "";
-        
+
+        updateChordStyleButton();
+        updateTransposePreview();
         renderList();
     }
 
@@ -271,7 +294,8 @@
         s.chords = document.getElementById('edit-chords').value;
         s.notes = document.getElementById('edit-notes').value;
         s.lyrics = document.getElementById('lyrics-editor').innerHTML;
-        
+
+        updateTransposePreview();
         document.getElementById('viewTitle').textContent = s.title;
         persist();
         const activeItem = document.querySelector('.song-item.active');
@@ -301,6 +325,67 @@
 
     function persist() { localStorage.setItem('songStudio_data', JSON.stringify(songs)); }
     function cmd(c, v=null) { document.execCommand(c, false, v); save(); }
+
+    // ===== Transpozycja (zgodna z index.html) =====
+    const SCALE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    let chordStyle = localStorage.getItem('chordStyle') || 'PL';
+    let transpose = 0;
+
+    function transChord(chordStr, steps) {
+        return chordStr.replace(/([a-gA-G][#b]?|[hH])/g, (match) => {
+            const isLowercase = (match === match.toLowerCase());
+            let base = match.toUpperCase();
+            if (base === 'H') base = 'B';
+            else if (base === 'BB') base = 'A#';
+            else if (base === 'B' && chordStyle === 'PL') base = 'A#';
+            let idx = SCALE.indexOf(base);
+            if (idx === -1) return match;
+            let newIdx = (idx + steps % 12 + 12) % 12;
+            let res = SCALE[newIdx];
+            if (chordStyle === 'PL') {
+                 if (res === 'B') res = 'H';
+                else if (res === 'A#') res = 'B';
+            } else {
+                if (res === 'A#') res = 'Bb';
+            }
+            return isLowercase ? res.toLowerCase() : res;
+        });
+    }
+
+    function transposeText(str, steps) {
+        // Tekst w nawiasach klamrowych { } jest pomijany przy transpozycji (np. {ref}, {rff#:});
+        // nawiasy są ukrywane w widoku, ale zachowane w danych źródłowych
+        return str.split(/(\{[^}]*\})/).map(seg => {
+            if (seg.startsWith('{') && seg.endsWith('}')) return seg.slice(1, -1);
+            return seg.replace(/([a-gA-G][#b]?[\w\d\/#\-]*|[hH][\w\d\/#\-]*)/g, m => transChord(m, steps));
+        }).join('');
+    }
+
+    function updateChordStyleButton() {
+        const btn = document.getElementById('btn-chord-style');
+        if (btn) btn.textContent = `Styl: ${chordStyle === 'PL' ? 'Polski (H)' : 'Angielski (B)'}`;
+    }
+
+    function toggleChordStyle() {
+        chordStyle = chordStyle === 'PL' ? 'EN' : 'PL';
+        localStorage.setItem('chordStyle', chordStyle);
+        updateChordStyleButton();
+        updateTransposePreview();
+    }
+
+    function changeTrans(v) { transpose += v; updateTransposePreview(); }
+    function resetTrans() { transpose = 0; updateTransposePreview(); }
+
+    function updateTransposePreview() {
+        const chords = document.getElementById('edit-chords').value || "";
+        document.getElementById('preview-chords').textContent = transposeText(chords, transpose);
+        document.getElementById('transpose-val').textContent = (transpose > 0 ? '+' : '') + transpose;
+
+        // Tekst: transponuj tylko akordy wewnątrz nawiasów [ ] (jak w index.html)
+        const lyricsText = document.getElementById('lyrics-editor').textContent || "";
+        const transposedLyrics = lyricsText.replace(/\[(.*?)\]/g, (m, c) => transposeText(c, transpose));
+        document.getElementById('preview-lyrics').textContent = transposedLyrics;
+    }
 
     function showCode() {
         document.getElementById('jsonViewer').textContent = JSON.stringify(songs, null, 2);
