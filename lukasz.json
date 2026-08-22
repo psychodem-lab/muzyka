@@ -54,5 +54,16 @@
     "key": "",
     "tempo": "81",
     "BPM": "81"
+  },
+    {
+    "title": "Lipka",
+    "artist": "Ludowe",
+    "vocal_type": "female",
+    "lyrics": "<div class=\"inner-text\" style=\"border-top: 1px solid rgb(255, 255, 255); padding-top: 0.75rem; font-family: Roboto, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, Arial, &quot;Noto Sans&quot;, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;, &quot;Noto Color Emoji&quot;; font-size: 14px; white-space: normal;\">Z tamtej strony jeziora<br>Stoi lipka zielona<br>A na tej lipce, na tej zielonieńkiej<br>Trzej ptaszkowie śpiewają<br>A na tej lipce, na tej zielonieńkiej<br>Trzej ptaszkowie śpiewają<br><br>Nie byli to ptaszkowie<br>Tylko trzej braciszkowie<br>Co się spierali o jedną dziewczynę<br>Który ci ją dostanie<br>Co się spierali o jedną dziewczynę<br>Który ci ją dostanie<br><br>Jeden mówi: ,,Tyś moja\"<br>Drugi mówi: ,,Jak Bóg da\"<br>A trzeci mówi: ,,Moja najmilejsza<br>Czemu żeś mi tak smutna?<br>A trzeci mówi: ,,Moja najmilejsza<br>Czemu żeś mi tak smutna?<br><br>,,Jakże nie mam smutna być?<br>Za starego każą iść<br>Czasu niewiele, tylko dwie niedziele<br>Mogę miły z tobą być<br>Czasu niewiele, tylko dwie niedziele<br>Mogę miły z tobą być\"<br><br>Z tamtej strony jeziora<br>Stoi lipka zielona<br>A na tej lipce, na tej zielonieńkiej<br>Trzej ptaszkowie śpiewają<br>A na tej lipce, na tej zielonieńkiej<br>Trzej ptaszkowie śpiewają</div><div><br></div>",
+    "chords": "e    H7  e\nG    D7  G\n\nG    D   e H7\ne    H7  e   \n\nG    D   e H7\ne    H7  e   \n\nbasslipka ",
+    "genre": "Ludowe",
+    "notes": "",
+    "key": "",
+    "bpm": "130"
   }
 ]
