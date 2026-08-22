@@ -294,9 +294,15 @@
         
         img.style.display = 'block';
         errorMsg.style.display = 'none';
+        let triedJpg = false;
         img.onerror = function() {
-            this.style.display = 'none';
-            errorMsg.style.display = 'block';
+            if (!triedJpg) {
+                triedJpg = true;
+                this.src = `akordy/${safeChord}.jpg`;
+            } else {
+                this.style.display = 'none';
+                errorMsg.style.display = 'block';
+            }
         };
         
         img.src =  `akordy/${safeChord}.png`;
