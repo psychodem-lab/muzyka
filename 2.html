@@ -185,9 +185,9 @@
             <button class="btn-icon" onclick="openSettings(event)"><i class="fas fa-cog"></i></button>
         </div>
         <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-            <button onclick="setSearch('male')" style="flex:1; padding: 5px; font-size: 12px;">♂ Męski</button>
-            <button onclick="setSearch('female')" style="flex:1; padding: 5px; font-size: 12px;">♀ Żeński</button>
-            <button onclick="setSearch('')" style="flex:1; padding: 5px; font-size: 12px; background: #eee; color: #000;">Wszystkie</button>
+            <button id="btn-male" onclick="setSearch('male')" style="flex:1; padding: 5px; font-size: 12px;">♂ Męski</button>
+            <button id="btn-female" onclick="setSearch('female')" style="flex:1; padding: 5px; font-size: 12px;">♀ Żeński</button>
+            <button id="btn-all" onclick="setSearch('')" style="flex:1; padding: 5px; font-size: 12px; background: #eee; color: #000;">Wszystkie</button>
         </div>
         <input type="text" id="search" placeholder="Szukaj..." style="width: 100%; padding:12px; margin-bottom:10px; border-radius: 20px; border: 1px solid var(--border-color); box-sizing: border-box;">
         <ul id="song-list"></ul>
@@ -387,7 +387,8 @@
         const selector = document.getElementById('collection-select');
         switchLibrary(selector.value);
         selector.onchange = (e) => switchLibrary(e.target.value);
-        document.getElementById('search').oninput = renderList;
+        document.getElementById('search').oninput = () => { updateFilterButtons(); renderList(); };
+        updateFilterButtons();
         document.getElementById('settings-menu').addEventListener('click', e => e.stopPropagation());
         if(localStorage.getItem('mqttRoom')) document.getElementById('mqtt-room-code').value = localStorage.getItem('mqttRoom');
     });
@@ -426,7 +427,30 @@
 
     function saveToLocal() { if (currentLibrary !== "favorites") localStorage.setItem('db_' + currentLibrary, JSON.stringify(allSongs));
     }
-    function setSearch(val) { document.getElementById('search').value = val; renderList();
+    function setSearch(val) { document.getElementById('search').value = val; updateFilterButtons(); renderList();
+    }
+
+    function updateFilterButtons() {
+        const term = document.getElementById('search').value;
+        const styles = {
+            'male':   { bg: '#cfe8ff', color: '#0a4da3' },
+            'female': { bg: '#ffd6e8', color: '#9c1450' },
+            '':       { bg: '#d4f5dd', color: '#14662e' }
+        };
+        [['male','btn-male'], ['female','btn-female'], ['','btn-all']].forEach(([key, id]) => {
+            const btn = document.getElementById(id);
+            if (term === key) {
+                btn.style.background = styles[key].bg;
+                btn.style.color = styles[key].color;
+                btn.style.fontWeight = 'bold';
+                btn.style.borderColor = styles[key].color;
+            } else {
+                btn.style.background = id === 'btn-all' ? '#eee' : '';
+                btn.style.color = id === 'btn-all' ? '#000' : '';
+                btn.style.fontWeight = '';
+                btn.style.borderColor = '';
+            }
+        });
     }
     
     function renderList() {
