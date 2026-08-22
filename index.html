@@ -55,12 +55,6 @@
 
         .sidebar-header { display: flex; gap: 10px; align-items: center; margin-bottom: 10px;
         }
-        .folder-item { width: 100%; text-align: left; padding: 12px 16px; border: 1px solid var(--border-color);
-        border-radius: 12px; cursor: pointer; background: rgba(0,0,0,0.02); font-size: 14px; font-weight: bold;
-        transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease; }
-        .folder-item:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-        .folder-item.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue);
-        box-shadow: 0 2px 10px rgba(0,123,255,0.4); }
         #controls-bar { display: flex; gap: 8px; padding: 10px; background: #eee;
         border-bottom: 1px solid #ccc; position: sticky; top: 0; z-index: 30; align-items: center; overflow-x: auto; transition: background-color 0.1s;
         }
@@ -182,15 +176,14 @@
 
 <div id="app-container">
     <div id="sidebar">
-        <div class="sidebar-header" style="justify-content: space-between;">
-            <span style="font-weight: bold;">Biblioteki</span>
+        <div class="sidebar-header">
+            <select id="collection-select" style="flex-grow:1; padding:10px 35px 10px 15px; font-weight: bold; border-radius: 12px; border: 1px solid var(--border-color); background-color: var(--bg-sidebar); color: var(--text-main); outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); background-repeat: no-repeat; background-position: right 10px center;">
+                <option value="piosenki.json">📁 Piosenki (Główna)</option>
+                <option value="koledy.json">🎄 Kolędy</option>
+                <option value="lukasz.json">👤 Inne</option>
+                <option value="favorites">⭐ Ulubione</option>
+            </select>
             <button class="btn-icon" onclick="openSettings(event)"><i class="fas fa-cog"></i></button>
-        </div>
-        <div id="folder-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;">
-            <button class="folder-item active" onclick="selectLibrary('piosenki.json', this)">📁 Piosenki (Główna)</button>
-            <button class="folder-item" onclick="selectLibrary('koledy.json', this)">🎄 Kolędy</button>
-            <button class="folder-item" onclick="selectLibrary('lukasz.json', this)">👤 Inne</button>
-            <button class="folder-item" onclick="selectLibrary('favorites', this)">⭐ Ulubione</button>
         </div>
         <div style="display: flex; gap: 5px; margin-bottom: 10px;">
             <button id="btn-male" onclick="setSearch('male')" style="flex:1; padding: 5px; font-size: 12px;">♂ Męski</button>
@@ -391,17 +384,10 @@
         }
         initialPinchDist = -1;
     }, false);
-    function selectLibrary(lib, el) {
-        document.querySelectorAll('.folder-item').forEach(b => b.classList.remove('active'));
-        if (el) el.classList.add('active');
-        else {
-            const match = document.querySelector(`.folder-item[onclick*="'${lib}'"]`);
-            if (match) match.classList.add('active');
-        }
-        switchLibrary(lib);
-    }
     document.addEventListener('DOMContentLoaded', () => {
-        switchLibrary(currentLibrary);
+        const selector = document.getElementById('collection-select');
+        switchLibrary(selector.value);
+        selector.onchange = (e) => switchLibrary(e.target.value);
         document.getElementById('search').oninput = () => { updateFilterButtons(); renderList(); };
         updateFilterButtons();
         document.getElementById('settings-menu').addEventListener('click', e => e.stopPropagation());
