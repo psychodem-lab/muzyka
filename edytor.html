@@ -177,6 +177,7 @@
                         <span class="val" id="transpose-val" onclick="resetTrans()" title="Kliknij, by zresetować">0</span>
                         <button type="button" class="btn btn-outline" onclick="changeTrans(1)">+</button>
                         <button type="button" class="btn btn-outline" id="btn-chord-style" onclick="toggleChordStyle()">Styl: Polski (H)</button>
+                        <button type="button" class="btn btn-primary" onclick="applyTransposeToSong()">Zastosuj w piosence ⤓</button>
                         <span style="font-size:12px; color:var(--text-muted);">kliknij wartość, by zresetować</span>
                     </div>
                     <div class="preview-box">
@@ -277,6 +278,7 @@
         document.getElementById('edit-notes').value = s.notes || "";
         document.getElementById('lyrics-editor').innerHTML = s.lyrics || "";
 
+        transpose = 0;
         updateChordStyleButton();
         updateTransposePreview();
         renderList();
@@ -375,6 +377,32 @@
 
     function changeTrans(v) { transpose += v; updateTransposePreview(); }
     function resetTrans() { transpose = 0; updateTransposePreview(); }
+
+    // Transpozycja wypiekana w danych: przetwarza tekst poza { }, ale zachowuje nawiasy { }
+    // (tak by opisy jak {ref} pozostały nietknięte i chronione przy kolejnych transpozycjach)
+    function transposeKeepBraces(str, steps) {
+        return str.split(/(\{[^}]*\})/).map(seg => {
+            if (seg.startsWith('{') && seg.endsWith('}')) return seg;
+            return seg.replace(/([a-gA-G][#b]?[\w\d\/#\-]*|[hH][\w\d\/#\-]*)/g, m => transChord(m, steps));
+        }).join('');
+    }
+
+    function applyTransposeToSong() {
+        if (currentIdx === -1) return;
+        if (transpose === 0) { alert("Ustaw najpierw wartość transpozycji (+, −)."); return; }
+        const s = songs[currentIdx];
+        const steps = transpose;
+        s.chords = transposeKeepBraces(s.chords || "", steps);
+        if (s.lyrics) {
+            s.lyrics = s.lyrics.replace(/\[(.*?)\]/g, (m, c) => '[' + transposeKeepBraces(c, steps) + ']');
+        }
+        document.getElementById('edit-chords').value = s.chords;
+        document.getElementById('lyrics-editor').innerHTML = s.lyrics;
+        transpose = 0;
+        updateTransposePreview();
+        persist();
+        alert(`Zastosowano transpozycję (${steps > 0 ? '+' : ''}${steps}) do utworu „${s.title}”.\nPobierz plik JSON, by zapisać zmiany w bazie.`);
+    }
 
     function updateTransposePreview() {
         const chords = document.getElementById('edit-chords').value || "";
