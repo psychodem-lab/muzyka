@@ -8,7 +8,7 @@
     "genre": "",
     "notes": "",
     "key": "",
-    "BPM": "",
+    "bpm": "",
     "id": "piosenki.json_173"
   },
   {
@@ -79,7 +79,7 @@
     "vocal_type": "female",
     "genre": "",
     "key": "D",
-    "BPM": "88",
+    "bpm": "88",
     "notes": "",
     "id": "piosenki.json_5"
   },
@@ -514,7 +514,7 @@
     "key": "",
     "tempo": "",
     "id": "piosenki.json_41_1766782671506",
-    "BPM": ""
+    "bpm": ""
   },
   {
     "title": "Zaczekaj z tym do jutra",
@@ -875,7 +875,7 @@
     "key": "",
     "tempo": "",
     "id": "piosenki.json_71_1766782671506",
-    "BPM": ""
+    "bpm": ""
   },
   {
     "title": "Białe łabędzie",
@@ -1091,7 +1091,7 @@
     "vocal_type": "male",
     "genre": "",
     "key": "",
-    "BPM": "",
+    "bpm": "",
     "notes": ""
   },
   {
@@ -1554,7 +1554,7 @@
     "key": "",
     "tempo": "",
     "id": "piosenki.json_128_1766782671506",
-    "BPM": "140"
+    "bpm": "140"
   },
   {
     "title": "Żono moja",
@@ -1771,7 +1771,7 @@
     "key": "",
     "tempo": "",
     "id": "piosenki.json_146_1766782671506",
-    "BPM": ""
+    "bpm": ""
   },
   {
     "title": "Piękna Młoda",
@@ -1820,7 +1820,7 @@
     "key": "",
     "tempo": "",
     "id": "piosenki.json_150_1766782671506",
-    "BPM": ""
+    "bpm": ""
   },
   {
     "title": "Ostatni raz zatańczysz ze mną",
@@ -1869,7 +1869,7 @@
     "key": "",
     "tempo": "",
     "id": "piosenki.json_154_1766782671506",
-    "BPM": ""
+    "bpm": ""
   },
   {
     "title": "Hej Sokoły",
@@ -2044,7 +2044,7 @@
     "genre": "",
     "notes": "",
     "key": "",
-    "BPM": "",
+    "bpm": "",
     "id": "piosenki.json_169"
   },
   {
@@ -2080,7 +2080,7 @@
     "genre": "",
     "notes": "",
     "key": "",
-    "BPM": "",
+    "bpm": "",
     "id": "piosenki.json_172"
   }
 ]
