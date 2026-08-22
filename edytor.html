@@ -276,6 +276,7 @@
     function load(index) {
         currentIdx = index;
         const s = songs[index];
+        if (!s.id) s.id = "song_" + Date.now();
         document.getElementById('editorContainer').style.display = 'block';
         document.getElementById('viewTitle').textContent = s.title;
 
@@ -320,7 +321,7 @@
     }
 
     function addNewSong() {
-        const n = { title: "Nowa piosenka", artist: "Artysta", vocal_type: "male", lyrics: "", chords: "", genre: "", notes: "", key: "", bpm: "" };
+        const n = { id: "song_" + Date.now(), title: "Nowa piosenka", artist: "Artysta", vocal_type: "male", lyrics: "", chords: "", genre: "", notes: "", key: "", bpm: "" };
         songs.unshift(n);
         currentIdx = 0;
         load(0);
