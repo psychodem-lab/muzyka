@@ -173,7 +173,7 @@
                 <div class="grid-layout">
                     <div class="field"><label>Gatunek (Genre)</label><input type="text" id="edit-genre" oninput="save()"></div>
                     <div class="field"><label>Tonacja (Key)</label><input type="text" id="edit-key" oninput="save()"></div>
-                    <div class="field"><label>Tempo (BPM)</label><input type="text" id="edit-BPM" oninput="save()"></div>
+                    <div class="field"><label>Tempo (bpm)</label><input type="text" id="edit-bpm" oninput="save()"></div>
                 </div>
 
                 <div class="field">
@@ -280,7 +280,8 @@
         document.getElementById('edit-vocal').value = s.vocal_type || "male";
         document.getElementById('edit-genre').value = s.genre || "";
         document.getElementById('edit-key').value = s.key || "";
-        document.getElementById('edit-BPM').value = s.BPM || "";
+        if (s.BPM !== undefined && s.bpm === undefined) { s.bpm = s.BPM; delete s.BPM; }
+        document.getElementById('edit-bpm').value = s.bpm || "";
         document.getElementById('edit-chords').value = s.chords || "";
         document.getElementById('edit-notes').value = s.notes || "";
         document.getElementById('lyrics-editor').innerHTML = s.lyrics || "";
@@ -299,7 +300,7 @@
         s.vocal_type = document.getElementById('edit-vocal').value;
         s.genre = document.getElementById('edit-genre').value;
         s.key = document.getElementById('edit-key').value;
-        s.BPM = document.getElementById('edit-BPM').value;
+        s.bpm = document.getElementById('edit-bpm').value;
         s.chords = document.getElementById('edit-chords').value;
         s.notes = document.getElementById('edit-notes').value;
         s.lyrics = document.getElementById('lyrics-editor').innerHTML;
@@ -315,7 +316,7 @@
     }
 
     function addNewSong() {
-        const n = { title: "Nowa piosenka", artist: "Artysta", vocal_type: "male", lyrics: "", chords: "", genre: "", notes: "", key: "", BPM: "" };
+        const n = { title: "Nowa piosenka", artist: "Artysta", vocal_type: "male", lyrics: "", chords: "", genre: "", notes: "", key: "", bpm: "" };
         songs.unshift(n);
         currentIdx = 0;
         load(0);
