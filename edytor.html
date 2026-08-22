@@ -223,11 +223,15 @@
 
     <div id="codeModal">
         <div class="modal-inner">
-            <div style="padding:20px; border-bottom:1px solid #1e293b; display:flex; justify-content:space-between; align-items:center;">
+            <div style="padding:20px; border-bottom:1px solid #1e293b; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
                 <strong style="color:white">Live JSON Data</strong>
-                <button class="btn btn-outline" onclick="document.getElementById('codeModal').style.display='none'">Zamknij podgląd</button>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="btn btn-primary" onclick="copyCode()">📋 Kopiuj KOD</button>
+                    <button class="btn btn-secondary" onclick="applyCode()">💾 Zastosuj edycję</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('codeModal').style.display='none'">Zamknij</button>
+                </div>
             </div>
-            <pre id="jsonViewer"></pre>
+            <pre id="jsonViewer" contenteditable="true" spellcheck="false" style="white-space:pre-wrap; outline:none;"></pre>
         </div>
     </div>
 
@@ -436,6 +440,43 @@
     function showCode() {
         document.getElementById('jsonViewer').textContent = JSON.stringify(songs, null, 2);
         document.getElementById('codeModal').style.display = 'block';
+    }
+
+    function copyCode() {
+        const code = document.getElementById('jsonViewer').textContent;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(code).then(
+                () => alert("Skopiowano kod do schowka."),
+                () => fallbackCopy(code)
+            );
+        } else {
+            fallbackCopy(code);
+        }
+    }
+
+    function fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); alert("Skopiowano kod do schowka."); }
+        catch (e) { alert("Nie udało się skopiować kodu."); }
+        document.body.removeChild(ta);
+    }
+
+    function applyCode() {
+        try {
+            const data = JSON.parse(document.getElementById('jsonViewer').textContent);
+            if (!Array.isArray(data)) throw new Error("Plik JSON musi być tablicą utworów.");
+            songs = data;
+            currentIdx = -1;
+            document.getElementById('editorContainer').style.display = 'none';
+            renderList();
+            persist();
+            alert(`Zastosowano edycję kodu. Wczytano ${songs.length} utworów.`);
+        } catch (e) {
+            alert("Błąd w składni JSON:\n" + e.message);
+        }
     }
 
     function downloadJSON() {
