@@ -261,6 +261,7 @@
     
     let allSongs = [];
     let currentLibrary = "piosenki.json";
+    let vocalFilter = "";
     let favorites = JSON.parse(localStorage.getItem('favSongs') || '[]');
     let currentId = null, lastId = null, transpose = 0, showChords = true;
     let chordStyle = localStorage.getItem('chordStyle') || 'PL'; 
@@ -428,11 +429,11 @@
 
     function saveToLocal() { if (currentLibrary !== "favorites") localStorage.setItem('db_' + currentLibrary, JSON.stringify(allSongs));
     }
-    function setSearch(val) { document.getElementById('search').value = val; updateFilterButtons(); renderList();
+    function setSearch(val) { vocalFilter = val; updateFilterButtons(); renderList();
     }
 
     function updateFilterButtons() {
-        const term = document.getElementById('search').value;
+        const term = vocalFilter;
         const styles = {
             'male':   { bg: '#cfe8ff', color: '#0a4da3' },
             'female': { bg: '#ffd6e8', color: '#9c1450' },
@@ -461,8 +462,8 @@
             const title = (s.title || "").toLowerCase();
             const artist = (s.artist || "").toLowerCase();
             const vocal = (s.vocal_type || "").toLowerCase();
-            if (term === "male") return vocal === "male" || vocal === "both";
-            if (term === "female") return vocal === "female" || vocal === "both";
+            if (vocalFilter === "male") return vocal === "male" || vocal === "both";
+            if (vocalFilter === "female") return vocal === "female" || vocal === "both";
             return title.includes(term) || artist.includes(term);
         });         
         list.innerHTML = filtered.sort((a,b)=>a.title.localeCompare(b.title)).map(s => `
