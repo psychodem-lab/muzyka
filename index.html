@@ -351,9 +351,10 @@
     }
 
     function transposeText(str, steps) {
-        // Tekst w nawiasach klamrowych { } jest pomijany przy transpozycji (np. {ref}, {rff#:})
+        // Tekst w nawiasach klamrowych { } jest pomijany przy transpozycji (np. {ref}, {rff#:});
+        // nawiasy są ukrywane w widoku, ale zachowane w danych źródłowych
         return str.split(/(\{[^}]*\})/).map(seg => {
-            if (seg.startsWith('{') && seg.endsWith('}')) return seg;
+            if (seg.startsWith('{') && seg.endsWith('}')) return seg.slice(1, -1);
             return seg.replace(/([a-gA-G][#b]?[\w\d\/#\-]*|[hH][\w\d\/#\-]*)/g, m => transChord(m, steps));
         }).join('');
     }
