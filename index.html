@@ -359,6 +359,25 @@
         }).join('');
     }
 
+    // Renderuje blok akordów: akordy są klikalne (pokazują obrazek), { } to zwykły tekst
+    function renderChordsPanel(str) {
+        const chordRe = /^[a-gA-G][#b]?[\w\d\/#\-]*$|^[hH][\w\d\/#\-]*$/;
+        return str.split(/(\{[^}]*\})/).map(seg => {
+            if (seg.startsWith('{') && seg.endsWith('}')) return escapeHtml(seg.slice(1, -1));
+            return seg.split(/([a-gA-G][#b]?[\w\d\/#\-]*|[hH][\w\d\/#\-]*)/g).map(part => {
+                if (chordRe.test(part)) {
+                    const tc = transChord(part, transpose);
+                    return `<span class="inline-chord" onclick="showChordInfo(event, '${tc}')">${escapeHtml(tc)}</span>`;
+                }
+                return escapeHtml(part);
+            }).join('');
+        }).join('');
+    }
+
+    function escapeHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
     window.addEventListener('popstate', (e) => { 
         if (document.body.classList.contains('song-active')) backToList(false); 
     });
@@ -515,7 +534,7 @@
         if (!song) return;
         let html = `<div class="song-header"><h2>${song.title}</h2><h4>${song.artist || ''}</h4></div>`;
         if (song.chords && showChords) {
-            const tc = transposeText(song.chords, transpose);
+            const tc = renderChordsPanel(song.chords);
             html += `<div class="chords-container"><pre id="active-chords-content">${tc}</pre></div>`;
         }
         const lyr = (song.lyrics || "").replace(/\[(.*?)\]/g, showChords ? (m, c) => {
