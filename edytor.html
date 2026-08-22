@@ -135,6 +135,7 @@
             <input type="file" id="fileInput" accept=".json">
             <input type="text" id="searchInput" class="search-box" placeholder="Szukaj w bazie..." oninput="renderList()">
             <button class="btn btn-add" onclick="addNewSong()">+ Nowa Piosenka</button>
+            <button class="btn btn-danger" onclick="clearDatabase()" style="width:100%; justify-content:center;">🗑️ Wyczyść bazę</button>
         </div>
         <div id="songList" class="song-list"></div>
     </aside>
@@ -318,6 +319,16 @@
     function deleteSong() {
         if(confirm("Usunąć trwale ten utwór?")) {
             songs.splice(currentIdx, 1);
+            currentIdx = -1;
+            document.getElementById('editorContainer').style.display = 'none';
+            renderList();
+            persist();
+        }
+    }
+
+    function clearDatabase() {
+        if(confirm("Czy na pewno usunąć WSZYSTKIE piosenki?\nPowstanie pusty plik JSON (operacja nieodwracalna).")) {
+            songs = [];
             currentIdx = -1;
             document.getElementById('editorContainer').style.display = 'none';
             renderList();
