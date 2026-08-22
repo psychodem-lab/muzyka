@@ -330,27 +330,31 @@
     }
 
     function transChord(chordStr, steps) {
-        // Tekst w nawiasach klamrowych { } jest pomijany (np. {ref}, {zwrotka})
-        return chordStr.split(/(\{[^}]*\})/).map(segment => {
-            if (segment.startsWith('{') && segment.endsWith('}')) return segment;
-            return segment.replace(/([a-gA-G][#b]?|[hH])/g, (match) => {
-                const isLowercase = (match === match.toLowerCase());
-                let base = match.toUpperCase();
-                if (base === 'H') base = 'B';
-                else if (base === 'BB') base = 'A#';
-                else if (base === 'B' && chordStyle === 'PL') base = 'A#';
-                let idx = SCALE.indexOf(base);
-                if (idx === -1) return match;
-                let newIdx = (idx + steps % 12 + 12) % 12;
-                let res = SCALE[newIdx];
-                if (chordStyle === 'PL') {
-                     if (res === 'B') res = 'H';   
-                    else if (res === 'A#') res = 'B';  
-                } else {
-                    if (res === 'A#') res = 'Bb';
-                }
-                return isLowercase ? res.toLowerCase() : res;
-            });
+        return chordStr.replace(/([a-gA-G][#b]?|[hH])/g, (match) => {
+            const isLowercase = (match === match.toLowerCase());
+            let base = match.toUpperCase();
+            if (base === 'H') base = 'B';
+            else if (base === 'BB') base = 'A#';
+            else if (base === 'B' && chordStyle === 'PL') base = 'A#';
+            let idx = SCALE.indexOf(base);
+            if (idx === -1) return match;
+            let newIdx = (idx + steps % 12 + 12) % 12;
+            let res = SCALE[newIdx];
+            if (chordStyle === 'PL') {
+                 if (res === 'B') res = 'H';
+                else if (res === 'A#') res = 'B';
+            } else {
+                if (res === 'A#') res = 'Bb';
+            }
+            return isLowercase ? res.toLowerCase() : res;
+        });
+    }
+
+    function transposeText(str, steps) {
+        // Tekst w nawiasach klamrowych { } jest pomijany przy transpozycji (np. {ref}, {rff#:})
+        return str.split(/(\{[^}]*\})/).map(seg => {
+            if (seg.startsWith('{') && seg.endsWith('}')) return seg;
+            return seg.replace(/([a-gA-G][#b]?[\w\d\/#\-]*|[hH][\w\d\/#\-]*)/g, m => transChord(m, steps));
         }).join('');
     }
 
@@ -510,11 +514,11 @@
         if (!song) return;
         let html = `<div class="song-header"><h2>${song.title}</h2><h4>${song.artist || ''}</h4></div>`;
         if (song.chords && showChords) {
-            const tc = song.chords.replace(/([a-gA-G][#b]?[\w\d\/#\-]*|[hH][\w\d\/#\-]*)/g, m => transChord(m, transpose));
+            const tc = transposeText(song.chords, transpose);
             html += `<div class="chords-container"><pre id="active-chords-content">${tc}</pre></div>`;
         }
         const lyr = (song.lyrics || "").replace(/\[(.*?)\]/g, showChords ? (m, c) => {
-            const tc = transChord(c, transpose);
+            const tc = transposeText(c, transpose);
             return `<span class="inline-chord" onclick="showChordInfo(event, '${tc}')">${tc}</span>`;
         } : '');
         document.getElementById('song-display').innerHTML = html + `<div class="lyrics-content">${lyr}</div>`;
