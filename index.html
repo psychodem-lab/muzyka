@@ -330,24 +330,28 @@
     }
 
     function transChord(chordStr, steps) {
-        return chordStr.replace(/([a-gA-G][#b]?|[hH])/g, (match) => {
-            const isLowercase = (match === match.toLowerCase());
-            let base = match.toUpperCase();
-            if (base === 'H') base = 'B';
-            else if (base === 'BB') base = 'A#';
-            else if (base === 'B' && chordStyle === 'PL') base = 'A#';
-            let idx = SCALE.indexOf(base);
-            if (idx === -1) return match;
-            let newIdx = (idx + steps % 12 + 12) % 12;
-            let res = SCALE[newIdx];
-            if (chordStyle === 'PL') {
-                 if (res === 'B') res = 'H';   
-                else if (res === 'A#') res = 'B';  
-            } else {
-                if (res === 'A#') res = 'Bb';
-            }
-            return isLowercase ? res.toLowerCase() : res;
-        });
+        // Tekst w nawiasach klamrowych { } jest pomijany (np. {ref}, {zwrotka})
+        return chordStr.split(/(\{[^}]*\})/).map(segment => {
+            if (segment.startsWith('{') && segment.endsWith('}')) return segment;
+            return segment.replace(/([a-gA-G][#b]?|[hH])/g, (match) => {
+                const isLowercase = (match === match.toLowerCase());
+                let base = match.toUpperCase();
+                if (base === 'H') base = 'B';
+                else if (base === 'BB') base = 'A#';
+                else if (base === 'B' && chordStyle === 'PL') base = 'A#';
+                let idx = SCALE.indexOf(base);
+                if (idx === -1) return match;
+                let newIdx = (idx + steps % 12 + 12) % 12;
+                let res = SCALE[newIdx];
+                if (chordStyle === 'PL') {
+                     if (res === 'B') res = 'H';   
+                    else if (res === 'A#') res = 'B';  
+                } else {
+                    if (res === 'A#') res = 'Bb';
+                }
+                return isLowercase ? res.toLowerCase() : res;
+            });
+        }).join('');
     }
 
     window.addEventListener('popstate', (e) => { 
