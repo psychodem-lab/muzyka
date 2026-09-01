@@ -554,9 +554,9 @@
         document.getElementById('transpose-val').textContent = (transpose > 0 ? '+' : '') + transpose;
     }
 
-    function changeTrans(v) { transpose += v; updateView(); broadcastState();
+    function changeTrans(v) { transpose += v; updateView();
     }
-    function resetTrans() { transpose = 0; updateView(); broadcastState();
+    function resetTrans() { transpose = 0; updateView();
     }
     
     function setFontSize(v) { 
@@ -700,7 +700,6 @@
                     if (data.title) {
                         const found = allSongs.find(s => s.title === data.title);
                         if (found) { 
-                            transpose = data.t; 
                             selectSong(found.id, true); 
                         }
                     }
@@ -716,7 +715,6 @@
             const song = allSongs.find(s => s.id === currentId);
             const payload = { 
                 title: song ? song.title : null, 
-                t: transpose,
                 favs: favorites, // Dodajemy aktualną listę ulubionych
                 reds: redSongs
             };
