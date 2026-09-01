@@ -31,6 +31,7 @@
         #sidebar { width: 320px;
         border-right: 1px solid var(--border-color); background: var(--bg-sidebar); padding: 15px; display: flex; flex-direction: column; transition: transform 0.3s ease; z-index: 20; text-align: left;
         }
+        body.fullscreen-mode #sidebar { display: none !important; }
         #main-content { flex-grow: 1; overflow-y: auto; background: var(--bg-main); scroll-behavior: smooth; position: relative;
         z-index: 10; touch-action: pan-y; text-align: left; }
 
@@ -211,6 +212,7 @@
                 <input type="range" id="scroll-speed" min="1" max="75" value="10" style="width:50px;">
             </div>
             <button onclick="toggleMetronome()" id="btn-metro-toggle" class="btn-icon"><i class="fas fa-drum"></i></button>
+            <button onclick="toggleFullscreen()" id="btn-fullscreen-toggle" class="btn-icon" title="Pełny ekran"><i class="fas fa-expand"></i></button>
             <div style="flex-grow: 1;"></div>
             <button class="btn-icon" onclick="openSettings(event)"><i class="fas fa-cog"></i></button>
         </div>
@@ -621,6 +623,18 @@
     function toggleMetronome() {
         if (isMetroActive) stopMetronome();
         else startMetronome();
+    }
+
+    function toggleFullscreen() {
+        document.body.classList.toggle('fullscreen-mode');
+        const btn = document.getElementById('btn-fullscreen-toggle');
+        if (document.body.classList.contains('fullscreen-mode')) {
+            btn.innerHTML = '<i class="fas fa-compress"></i>';
+            btn.title = "Wyjdź z pełnego ekranu";
+        } else {
+            btn.innerHTML = '<i class="fas fa-expand"></i>';
+            btn.title = "Pełny ekran";
+        }
     }
 
     function startMetronome() {
