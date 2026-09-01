@@ -102,7 +102,9 @@
         box-shadow: 0 2px 10px rgba(0,123,255,0.4); }
         .fav-star { color: #ccc; transition: 0.2s; padding: 5px;
         }
-        .fav-star.active { color: #ffc107;
+        .fav-star.active-yellow { color: #ffc107;
+        }
+        .fav-star.active-red { color: #dc3545;
         }
 
         #editor-modal { display: none; position: fixed; top: 0; left: 0; width: 100%;
@@ -263,6 +265,7 @@
     let currentLibrary = "piosenki.json";
     let vocalFilter = "";
     let favorites = JSON.parse(localStorage.getItem('favSongs') || '[]');
+    let redSongs = JSON.parse(localStorage.getItem('redSongs') || '[]');
     let currentId = null, lastId = null, transpose = 0, showChords = true;
     let chordStyle = localStorage.getItem('chordStyle') || 'PL'; 
     let scrollInterval = null, isScrolling = false, metroInterval = null, isMetroActive = false;
@@ -503,7 +506,7 @@
         list.innerHTML = filtered.sort((a,b)=>a.title.localeCompare(b.title)).map(s => `
             <li onclick="selectSong('${s.id}')" class="${currentId === s.id ? 'selected' : ''}">
                 <span>${s.title}</span>
-                <i class="fas fa-star fav-star ${favorites.includes(s.id) ? 'active' : ''}" onclick="toggleFav(event, '${s.id}')"></i>
+                <i class="fas fa-star fav-star ${favorites.includes(s.id) ? 'active-yellow' : (redSongs.includes(s.id) ? 'active-red' : '')}" onclick="toggleFav(event, '${s.id}')"></i>
             </li>
         `).join('');
     }
@@ -565,10 +568,27 @@
 
     function toggleFav(e, id) { 
         e.stopPropagation(); 
-        favorites.includes(id) ? favorites = favorites.filter(f=>f!==id) : favorites.push(id); 
+        const isFav = favorites.includes(id);
+        const isRed = redSongs.includes(id);
+
+        if (!isFav && !isRed) {
+            favorites.push(id);
+        } else if (isFav) {
+            favorites = favorites.filter(f => f !== id);
+            redSongs.push(id);
+        } else if (isRed) {
+            redSongs = redSongs.filter(r => r !== id);
+        }
+
         localStorage.setItem('favSongs', JSON.stringify(favorites)); 
-        renderList();
-        // Jeśli to lider, po zmianie ulubionych wyślij aktualizację przez MQTT
+        localStorage.setItem('redSongs', JSON.stringify(redSongs));
+
+        if (currentLibrary === "favorites") {
+            switchLibrary("favorites");
+        } else {
+            renderList();
+        }
+
         if (isMaster) {
             broadcastState();
         }
@@ -663,10 +683,17 @@
                     if (data.favs && Array.isArray(data.favs)) {
                         favorites = data.favs; // Nadpisujemy lokalną tablicę nową listą od lidera
                         localStorage.setItem('favSongs', JSON.stringify(favorites)); // Zapisujemy w pamięci podręcznej
-                        
-                        // KLUCZOWY MOMENT: Wywołujemy renderList(). 
-                        // Jeśli słuchacz jest w zakładce "Ulubione", lista natychmiast dopisze/usunie piosenki na ekranie.
-                        renderList(); 
+                    }
+                    if (data.reds && Array.isArray(data.reds)) {
+                        redSongs = data.reds;
+                        localStorage.setItem('redSongs', JSON.stringify(redSongs));
+                    }
+                    if (data.favs || data.reds) {
+                        if (currentLibrary === "favorites") {
+                            switchLibrary("favorites");
+                        } else {
+                            renderList();
+                        }
                     }
 
                     // 2. Automatyczne otwieranie piosenki wybranej przez lidera
@@ -690,7 +717,8 @@
             const payload = { 
                 title: song ? song.title : null, 
                 t: transpose,
-                favs: favorites // Dodajemy aktualną listę ulubionych
+                favs: favorites, // Dodajemy aktualną listę ulubionych
+                reds: redSongs
             };
             mqttClient.publish(mqttTopic, JSON.stringify(payload), { retain: true });
         }
