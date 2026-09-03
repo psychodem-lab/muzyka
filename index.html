@@ -280,7 +280,7 @@
     let scrollInterval = null, isScrolling = false, metroInterval = null, isMetroActive = false;
     let currentFontSize = 18;
     let currentBPM = 120;
-    let mqttClient = null, isMaster = false, mqttTopic = "", heartbeatInterval = null;
+    let mqttClient = null, isMaster = false, mqttTopic = "";
     let clientId = localStorage.getItem('clientId');
     if (!clientId) {
         clientId = 'client_' + Math.random().toString(36).substr(2, 9);
@@ -715,10 +715,6 @@
         mqttTopic = "muzycznik_sync_2025/" + roomCode; 
         document.getElementById('mqtt-status-text').textContent = "Łączenie...";
         if (mqttClient) mqttClient.end();
-        if (heartbeatInterval) {
-            clearInterval(heartbeatInterval);
-            heartbeatInterval = null;
-        }
         mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
         mqttClient.on('connect', () => {
             document.getElementById('conn-status-dot').classList.add('connected');
@@ -727,30 +723,18 @@
             document.getElementById('btn-mqtt-disconnect').style.display = 'block';
             if (isMaster) {
                 broadcastState();
-                if (heartbeatInterval) clearInterval(heartbeatInterval);
-                heartbeatInterval = setInterval(() => {
-                    broadcastState();
-                }, 4000); // Heartbeat co 4 sekundy
                 document.getElementById('btn-takeover').style.display = 'none';
             } else {
                 document.getElementById('btn-takeover').style.display = 'block';
             }
         });
         mqttClient.on('close', () => {
-            if (heartbeatInterval) {
-                clearInterval(heartbeatInterval);
-                heartbeatInterval = null;
-            }
             document.getElementById('conn-status-dot').classList.remove('connected');
             document.getElementById('mqtt-status-text').textContent = "Rozłączono";
             document.getElementById('btn-takeover').style.display = 'none';
             document.getElementById('btn-mqtt-disconnect').style.display = 'none';
         });
         mqttClient.on('error', (err) => {
-            if (heartbeatInterval) {
-                clearInterval(heartbeatInterval);
-                heartbeatInterval = null;
-            }
             console.error("MQTT Error:", err);
             document.getElementById('mqtt-status-text').textContent = "Błąd połączenia";
             document.getElementById('btn-takeover').style.display = 'none';
@@ -766,10 +750,6 @@
                         if (isMaster) {
                             // Inny lider przejął kontrolę - stajemy się słuchaczem
                             isMaster = false;
-                            if (heartbeatInterval) {
-                                clearInterval(heartbeatInterval);
-                                heartbeatInterval = null;
-                            }
                             document.getElementById('mqtt-status-text').textContent = "SŁUCHACZ: Aktywny (Lider się zmienił)";
                             document.getElementById('btn-takeover').style.display = 'block';
                             document.getElementById('btn-mqtt-disconnect').style.display = 'block';
@@ -828,10 +808,6 @@
         }
         isMaster = true;
         broadcastState();
-        if (heartbeatInterval) clearInterval(heartbeatInterval);
-        heartbeatInterval = setInterval(() => {
-            broadcastState();
-        }, 4000);
         document.getElementById('mqtt-status-text').textContent = "LIDER: Aktywny (Przejęto)";
         document.getElementById('btn-takeover').style.display = 'none';
         document.getElementById('btn-mqtt-disconnect').style.display = 'block';
@@ -850,10 +826,6 @@
     }
 
     function disconnectMQTT() {
-        if (heartbeatInterval) {
-            clearInterval(heartbeatInterval);
-            heartbeatInterval = null;
-        }
         if (mqttClient) {
             mqttClient.end();
             mqttClient = null;
