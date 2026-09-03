@@ -240,6 +240,7 @@
                     <button onclick="connectMQTT(true)" style="flex:1; background:var(--accent-blue); color:white;">LIDER</button>
                     <button onclick="connectMQTT(false)" style="flex:1;">SŁUCHACZ</button>
                 </div>
+                <button onclick="takeOverLeadership()" style="width:100%; margin-top:5px; background:#ff9f43; color:white; font-weight:bold; display:none;" id="btn-takeover">👑 PRZEJMIJ LIDERA</button>
                 <div id="mqtt-status-text" style="font-size:10px; color:green; margin-top:5px; min-height:12px;"></div>
             </div>
 
@@ -275,6 +276,11 @@
     let currentFontSize = 18;
     let currentBPM = 120;
     let mqttClient = null, isMaster = false, mqttTopic = "", heartbeatInterval = null;
+    let clientId = localStorage.getItem('clientId');
+    if (!clientId) {
+        clientId = 'client_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('clientId', clientId);
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
         updateChordStyleButton();
@@ -712,14 +718,16 @@
         mqttClient.on('connect', () => {
             document.getElementById('conn-status-dot').classList.add('connected');
             document.getElementById('mqtt-status-text').textContent = isMaster ? "LIDER: Aktywny" : "SŁUCHACZ: Aktywny";
-            if (!isMaster) {
-                mqttClient.subscribe(mqttTopic);
-            } else {
+            mqttClient.subscribe(mqttTopic);
+            if (isMaster) {
                 broadcastState();
                 if (heartbeatInterval) clearInterval(heartbeatInterval);
                 heartbeatInterval = setInterval(() => {
                     broadcastState();
                 }, 4000); // Heartbeat co 4 sekundy
+                document.getElementById('btn-takeover').style.display = 'none';
+            } else {
+                document.getElementById('btn-takeover').style.display = 'block';
             }
         });
         mqttClient.on('close', () => {
@@ -729,6 +737,7 @@
             }
             document.getElementById('conn-status-dot').classList.remove('connected');
             document.getElementById('mqtt-status-text').textContent = "Rozłączono";
+            document.getElementById('btn-takeover').style.display = 'none';
         });
         mqttClient.on('error', (err) => {
             if (heartbeatInterval) {
@@ -737,34 +746,51 @@
             }
             console.error("MQTT Error:", err);
             document.getElementById('mqtt-status-text').textContent = "Błąd połączenia";
+            document.getElementById('btn-takeover').style.display = 'none';
         });
         mqttClient.on('message', (topic, message) => {
-            if (!isMaster && topic === mqttTopic) {
+            if (topic === mqttTopic) {
                 try {
                     const data = JSON.parse(message.toString());
                     
-                    // 1. Aktualizacja ulubionych piosenek od lidera w czasie rzeczywistym
-                    if (data.favs && Array.isArray(data.favs)) {
-                        favorites = data.favs; // Nadpisujemy lokalną tablicę nową listą od lidera
-                        localStorage.setItem('favSongs', JSON.stringify(favorites)); // Zapisujemy w pamięci podręcznej
-                    }
-                    if (data.reds && Array.isArray(data.reds)) {
-                        redSongs = data.reds;
-                        localStorage.setItem('redSongs', JSON.stringify(redSongs));
-                    }
-                    if (data.favs || data.reds) {
-                        if (currentLibrary === "favorites") {
-                            switchLibrary("favorites");
-                        } else {
-                            renderList();
+                    // Jeśli wiadomość od innego klienta
+                    if (data.clientId && data.clientId !== clientId) {
+                        if (isMaster) {
+                            // Inny lider przejął kontrolę - stajemy się słuchaczem
+                            isMaster = false;
+                            if (heartbeatInterval) {
+                                clearInterval(heartbeatInterval);
+                                heartbeatInterval = null;
+                            }
+                            document.getElementById('mqtt-status-text').textContent = "SŁUCHACZ: Aktywny (Lider się zmienił)";
+                            document.getElementById('btn-takeover').style.display = 'block';
                         }
                     }
 
-                    // 2. Automatyczne otwieranie piosenki wybranej przez lidera
-                    if (data.title) {
-                        const found = allSongs.find(s => s.title === data.title);
-                        if (found) { 
-                            selectSong(found.id, true); 
+                    if (!isMaster) {
+                        // 1. Aktualizacja ulubionych piosenek od lidera w czasie rzeczywistym
+                        if (data.favs && Array.isArray(data.favs)) {
+                            favorites = data.favs; // Nadpisujemy lokalną tablicę nową listą od lidera
+                            localStorage.setItem('favSongs', JSON.stringify(favorites)); // Zapisujemy w pamięci podręcznej
+                        }
+                        if (data.reds && Array.isArray(data.reds)) {
+                            redSongs = data.reds;
+                            localStorage.setItem('redSongs', JSON.stringify(redSongs));
+                        }
+                        if (data.favs || data.reds) {
+                            if (currentLibrary === "favorites") {
+                                switchLibrary("favorites");
+                            } else {
+                                renderList();
+                            }
+                        }
+
+                        // 2. Automatyczne otwieranie piosenki wybranej przez lidera
+                        if (data.title) {
+                            const found = allSongs.find(s => s.title === data.title);
+                            if (found) { 
+                                selectSong(found.id, true); 
+                            }
                         }
                     }
                 } catch (e) { 
@@ -778,12 +804,27 @@
         if (isMaster && mqttClient && mqttClient.connected) {
             const song = allSongs.find(s => s.id === currentId);
             const payload = { 
+                clientId: clientId,
                 title: song ? song.title : null, 
                 favs: favorites, // Dodajemy aktualną listę ulubionych
                 reds: redSongs
             };
             mqttClient.publish(mqttTopic, JSON.stringify(payload), { retain: true });
         }
+    }
+
+    function takeOverLeadership() {
+        if (!mqttClient || !mqttClient.connected) {
+            return alert("Najpierw połącz się z pokojem MQTT!");
+        }
+        isMaster = true;
+        broadcastState();
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
+        heartbeatInterval = setInterval(() => {
+            broadcastState();
+        }, 4000);
+        document.getElementById('mqtt-status-text').textContent = "LIDER: Aktywny (Przejęto)";
+        document.getElementById('btn-takeover').style.display = 'none';
     }
 
     function closeEditor() { document.getElementById('editor-modal').style.display = 'none';
