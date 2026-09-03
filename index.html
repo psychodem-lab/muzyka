@@ -298,13 +298,16 @@
             let lastTapTime = 0;
             captureArea.addEventListener('touchend', (e) => {
                 if (e.target.closest('.inline-chord')) return;
+                if (e.changedTouches.length > 1 || initialPinchDist > 0) return;
                 const currentTime = new Date().getTime();
                 const tapLength = currentTime - lastTapTime;
-                if (tapLength < 300 && tapLength > 0) {
+                if (tapLength < 400 && tapLength > 0) {
                     e.preventDefault();
                     toggleFullscreen();
+                    lastTapTime = 0;
+                } else {
+                    lastTapTime = currentTime;
                 }
-                lastTapTime = currentTime;
             }, {passive: false});
         }
     });
