@@ -260,7 +260,7 @@
             <input type="file" id="import-file" style="display:none" onchange="importJSON(this)">
             <button onclick="exportJSON()">Pobierz JSON</button>
             <button onclick="exportAllJPG()" style="background:var(--accent-success); color:white;">Eksport JPG</button>
-            <button onclick="clearFavorites()" style="background:#dc3545; color:white;">Wyczyść ulubione</button>
+            <button onclick="clearFavorites()" style="background:#dc3545; color:white;">Wyczyść zaznaczenia</button>
         </div>
     </div>
 </div>
@@ -867,9 +867,11 @@
     }
 
     function clearFavorites() {
-        if (confirm("Czy na pewno chcesz usunąć wszystkie piosenki z ulubionych?")) {
+        if (confirm("Czy na pewno chcesz wyczyścić wszystkie zaznaczenia gwiazdek (ulubione i zagrane)?")) {
             favorites = [];
+            redSongs = [];
             localStorage.setItem('favSongs', JSON.stringify(favorites));
+            localStorage.setItem('redSongs', JSON.stringify(redSongs));
             if (currentLibrary === "favorites") {
                 switchLibrary("favorites");
             } else {
@@ -878,7 +880,7 @@
             if (isMaster) {
                 broadcastState();
             }
-            alert("Wyczyszczono ulubione!");
+            alert("Wyczyszczono wszystkie zaznaczenia gwiazdek!");
         }
     }
 
