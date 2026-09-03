@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spiewnik-v3';
+const CACHE_NAME = 'spiewnik-v4';
 const ASSETS = [
   'index.html',
   'manifest.json',
@@ -6,8 +6,9 @@ const ASSETS = [
   'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
 ];
 
-// Instalacja i zapisywanie kluczowych plików w pamięci podręcznej (bez baz JSON)
+// Instalacja i natychmiastowe przejście do aktywacji
 self.addEventListener('install', (e) => {
+  self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS);
@@ -15,14 +16,14 @@ self.addEventListener('install', (e) => {
   );
 });
 
-// Aktywacja i czyszczenie starych wersji cache (np. spiewnik-v2)
+// Aktywacja i natychmiastowe przejęcie kontroli nad klientami
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
@@ -30,12 +31,11 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
-  // Strategia dla baz danych JSON - Network-First (zawsze pytaj serwer o świeże dane)
-  if (url.pathname.endsWith('.json')) {
+  // Strategia Network-First dla JSON oraz index.html / strony głównej
+  if (url.pathname.endsWith('.json') || url.pathname.endsWith('index.html') || url.pathname.endsWith('/')) {
     e.respondWith(
       fetch(e.request)
         .then((response) => {
-          // Jeśli udało się pobrać, zaktualizuj też wersję w cache Service Workera na wszelki wypadek
           if (response.ok) {
             const copy = response.clone();
             caches.open(CACHE_NAME).then(cache => cache.put(e.request, copy));
@@ -43,12 +43,11 @@ self.addEventListener('fetch', (e) => {
           return response;
         })
         .catch(() => {
-          // W przypadku całkowitego braku sieci, spróbuj podać wersję z cache
           return caches.match(e.request);
         })
     );
   } else {
-    // Strategia Cache-First dla plików statycznych (HTML, CSS, JS, ikony)
+    // Strategia Cache-First dla zewnętrznych bibliotek i ikon
     e.respondWith(
       caches.match(e.request).then((res) => {
         return res || fetch(e.request);
