@@ -260,6 +260,7 @@
             <input type="file" id="import-file" style="display:none" onchange="importJSON(this)">
             <button onclick="exportJSON()">Pobierz JSON</button>
             <button onclick="exportAllJPG()" style="background:var(--accent-success); color:white;">Eksport JPG</button>
+            <button onclick="clearFavorites()" style="background:#dc3545; color:white;">Wyczyść ulubione</button>
         </div>
     </div>
 </div>
@@ -863,6 +864,22 @@
         document.getElementById('btn-takeover').style.display = 'none';
         document.getElementById('btn-mqtt-disconnect').style.display = 'none';
         localStorage.removeItem('mqttRoom');
+    }
+
+    function clearFavorites() {
+        if (confirm("Czy na pewno chcesz usunąć wszystkie piosenki z ulubionych?")) {
+            favorites = [];
+            localStorage.setItem('favSongs', JSON.stringify(favorites));
+            if (currentLibrary === "favorites") {
+                switchLibrary("favorites");
+            } else {
+                renderList();
+            }
+            if (isMaster) {
+                broadcastState();
+            }
+            alert("Wyczyszczono ulubione!");
+        }
     }
 
     function closeEditor() { document.getElementById('editor-modal').style.display = 'none';
