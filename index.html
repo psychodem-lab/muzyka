@@ -288,6 +288,25 @@
         document.getElementById('chord-modal').addEventListener('click', function(e) {
             if (e.target === this) closeChordModal();
         });
+
+        const captureArea = document.getElementById('song-capture-area');
+        if (captureArea) {
+            captureArea.addEventListener('dblclick', (e) => {
+                if (e.target.closest('.inline-chord')) return;
+                toggleFullscreen();
+            });
+            let lastTapTime = 0;
+            captureArea.addEventListener('touchend', (e) => {
+                if (e.target.closest('.inline-chord')) return;
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTapTime;
+                if (tapLength < 300 && tapLength > 0) {
+                    e.preventDefault();
+                    toggleFullscreen();
+                }
+                lastTapTime = currentTime;
+            }, {passive: false});
+        }
     });
 
     function showChordInfo(e, chord) {
