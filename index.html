@@ -214,6 +214,7 @@
             </div>
             <button onclick="toggleMetronome()" id="btn-metro-toggle" class="btn-icon"><i class="fas fa-drum"></i></button>
             <button onclick="toggleFullscreen()" id="btn-fullscreen-toggle" class="btn-icon" title="Pełny ekran"><i class="fas fa-expand"></i></button>
+            <span id="bar-sync-dot" onclick="onBarDotClick()" title="Status synchronizacji (kliknij, aby połączyć jako słuchacz)" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:red; margin:0 8px; cursor:pointer; vertical-align:middle;"></span>
             <div style="flex-grow: 1;"></div>
             <button class="btn-icon" onclick="openSettings(event)"><i class="fas fa-cog"></i></button>
         </div>
@@ -717,7 +718,7 @@
         if (mqttClient) mqttClient.end();
         mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
         mqttClient.on('connect', () => {
-            document.getElementById('conn-status-dot').classList.add('connected');
+            updateSyncIndicators();
             document.getElementById('mqtt-status-text').textContent = isMaster ? "LIDER: Aktywny" : "SŁUCHACZ: Aktywny";
             mqttClient.subscribe(mqttTopic);
             document.getElementById('btn-mqtt-disconnect').style.display = 'block';
@@ -729,12 +730,13 @@
             }
         });
         mqttClient.on('close', () => {
-            document.getElementById('conn-status-dot').classList.remove('connected');
+            updateSyncIndicators();
             document.getElementById('mqtt-status-text').textContent = "Rozłączono";
             document.getElementById('btn-takeover').style.display = 'none';
             document.getElementById('btn-mqtt-disconnect').style.display = 'none';
         });
         mqttClient.on('error', (err) => {
+            updateSyncIndicators();
             console.error("MQTT Error:", err);
             document.getElementById('mqtt-status-text').textContent = "Błąd połączenia";
             document.getElementById('btn-takeover').style.display = 'none';
@@ -750,6 +752,7 @@
                         if (isMaster) {
                             // Inny lider przejął kontrolę - stajemy się słuchaczem
                             isMaster = false;
+                            updateSyncIndicators();
                             document.getElementById('mqtt-status-text').textContent = "SŁUCHACZ: Aktywny (Lider się zmienił)";
                             document.getElementById('btn-takeover').style.display = 'block';
                             document.getElementById('btn-mqtt-disconnect').style.display = 'block';
@@ -808,6 +811,7 @@
         }
         isMaster = true;
         broadcastState();
+        updateSyncIndicators();
         document.getElementById('mqtt-status-text').textContent = "LIDER: Aktywny (Przejęto)";
         document.getElementById('btn-takeover').style.display = 'none';
         document.getElementById('btn-mqtt-disconnect').style.display = 'block';
@@ -831,11 +835,33 @@
             mqttClient = null;
         }
         isMaster = false;
-        document.getElementById('conn-status-dot').classList.remove('connected');
+        updateSyncIndicators();
         document.getElementById('mqtt-status-text').textContent = "Rozłączono";
         document.getElementById('btn-takeover').style.display = 'none';
         document.getElementById('btn-mqtt-disconnect').style.display = 'none';
         localStorage.removeItem('mqttRoom');
+    }
+
+    function updateSyncIndicators() {
+        const dot1 = document.getElementById('conn-status-dot');
+        const dot2 = document.getElementById('bar-sync-dot');
+        let color = 'red'; // rozłączona
+        if (mqttClient && mqttClient.connected) {
+            color = isMaster ? '#ffc107' : '#28a745'; // żółta = lider, zielona = słuchacz
+        }
+        if (dot1) dot1.style.background = color;
+        if (dot2) dot2.style.background = color;
+    }
+
+    function onBarDotClick() {
+        const roomCode = localStorage.getItem('mqttRoom') || document.getElementById('mqtt-room-code').value.trim();
+        if (!roomCode) {
+            alert("Brak zapisanego pokoju synchronizacji. Skonfiguruj pokój w ustawieniach.");
+            openSettings({stopPropagation: () => {}});
+            return;
+        }
+        document.getElementById('mqtt-room-code').value = roomCode;
+        connectMQTT(false);
     }
 
     function clearFavorites() {
