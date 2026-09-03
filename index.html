@@ -232,8 +232,6 @@
         <div style="font-size:12px; font-weight:bold;">Czcionka: <span id="font-size-val">18px</span></div>
         <input type="range" id="font-size-slider" min="12" max="60" value="18" oninput="setFontSize(this.value)">
         
-        <button onclick="toggleChordsDisplay()" id="btn-toggle-chords">Ukryj akordy</button>
-        <button onclick="toggleChordStyle()" id="btn-chord-style">Styl: Polski (H)</button>
         <button onclick="toggleDarkMode()"><i class="fas fa-moon"></i> Tryb nocny</button>
         
         <div id="mqtt-sync-section" style="border: 1px solid var(--border-color); padding: 10px; border-radius: 5px; margin-top: 5px; background: rgba(0,0,0,0.02);">
@@ -246,17 +244,23 @@
                 <button onclick="connectMQTT(false)" style="flex:1;">SŁUCHACZ</button>
             </div>
             <button onclick="takeOverLeadership()" style="width:100%; margin-top:5px; background:#ff9f43; color:white; font-weight:bold; display:none;" id="btn-takeover">👑 PRZEJMIJ LIDERA</button>
+            <button onclick="disconnectMQTT()" style="width:100%; margin-top:5px; background:#dc3545; color:white; display:none;" id="btn-mqtt-disconnect">Rozłącz</button>
             <div id="mqtt-status-text" style="font-size:10px; color:green; margin-top:5px; min-height:12px;"></div>
         </div>
 
         <hr style="opacity:0.2">
-        <button onclick="startEditCurrent()">Edytuj piosenkę</button>
-        <button onclick="startNewSong()">Dodaj nową</button>
-        <button onclick="document.getElementById('import-file').click()">Importuj JSON</button>
-        <input type="file" id="import-file" style="display:none" onchange="importJSON(this)">
-        <button onclick="exportJSON()">Pobierz JSON</button>
-        <button onclick="exportAllJPG()" style="background:var(--accent-success); color:white;">Eksport JPG</button>
-        <button onclick="resetFromServer()" style="background:#dc3545; color:white;">Resetuj z serwera</button>
+        <button onclick="toggleAdvancedSettings()" id="btn-advanced-toggle" style="background:rgba(0,0,0,0.05); font-weight:bold;">⚙️ Zaawansowane ▼</button>
+        <div id="advanced-settings-container" style="display:none; flex-direction:column; gap:8px; margin-top:5px;">
+            <button onclick="toggleChordsDisplay()" id="btn-toggle-chords">Ukryj akordy</button>
+            <button onclick="toggleChordStyle()" id="btn-chord-style">Styl: Polski (H)</button>
+            <button onclick="startEditCurrent()">Edytuj piosenkę</button>
+            <button onclick="startNewSong()">Dodaj nową</button>
+            <button onclick="document.getElementById('import-file').click()">Importuj JSON</button>
+            <input type="file" id="import-file" style="display:none" onchange="importJSON(this)">
+            <button onclick="exportJSON()">Pobierz JSON</button>
+            <button onclick="exportAllJPG()" style="background:var(--accent-success); color:white;">Eksport JPG</button>
+            <button onclick="resetFromServer()" style="background:#dc3545; color:white;">Resetuj z serwera</button>
+        </div>
     </div>
 </div>
 
@@ -719,6 +723,7 @@
             document.getElementById('conn-status-dot').classList.add('connected');
             document.getElementById('mqtt-status-text').textContent = isMaster ? "LIDER: Aktywny" : "SŁUCHACZ: Aktywny";
             mqttClient.subscribe(mqttTopic);
+            document.getElementById('btn-mqtt-disconnect').style.display = 'block';
             if (isMaster) {
                 broadcastState();
                 if (heartbeatInterval) clearInterval(heartbeatInterval);
@@ -738,6 +743,7 @@
             document.getElementById('conn-status-dot').classList.remove('connected');
             document.getElementById('mqtt-status-text').textContent = "Rozłączono";
             document.getElementById('btn-takeover').style.display = 'none';
+            document.getElementById('btn-mqtt-disconnect').style.display = 'none';
         });
         mqttClient.on('error', (err) => {
             if (heartbeatInterval) {
@@ -747,6 +753,7 @@
             console.error("MQTT Error:", err);
             document.getElementById('mqtt-status-text').textContent = "Błąd połączenia";
             document.getElementById('btn-takeover').style.display = 'none';
+            document.getElementById('btn-mqtt-disconnect').style.display = 'none';
         });
         mqttClient.on('message', (topic, message) => {
             if (topic === mqttTopic) {
@@ -764,6 +771,7 @@
                             }
                             document.getElementById('mqtt-status-text').textContent = "SŁUCHACZ: Aktywny (Lider się zmienił)";
                             document.getElementById('btn-takeover').style.display = 'block';
+                            document.getElementById('btn-mqtt-disconnect').style.display = 'block';
                         }
                     }
 
@@ -825,6 +833,36 @@
         }, 4000);
         document.getElementById('mqtt-status-text').textContent = "LIDER: Aktywny (Przejęto)";
         document.getElementById('btn-takeover').style.display = 'none';
+        document.getElementById('btn-mqtt-disconnect').style.display = 'block';
+    }
+
+    function toggleAdvancedSettings() {
+        const container = document.getElementById('advanced-settings-container');
+        const btn = document.getElementById('btn-advanced-toggle');
+        if (container.style.display === 'flex' || container.style.display === 'block') {
+            container.style.display = 'none';
+            btn.innerHTML = '⚙️ Zaawansowane ▼';
+        } else {
+            container.style.display = 'flex';
+            btn.innerHTML = '⚙️ Zaawansowane ▲';
+        }
+    }
+
+    function disconnectMQTT() {
+        if (heartbeatInterval) {
+            clearInterval(heartbeatInterval);
+            heartbeatInterval = null;
+        }
+        if (mqttClient) {
+            mqttClient.end();
+            mqttClient = null;
+        }
+        isMaster = false;
+        document.getElementById('conn-status-dot').classList.remove('connected');
+        document.getElementById('mqtt-status-text').textContent = "Rozłączono";
+        document.getElementById('btn-takeover').style.display = 'none';
+        document.getElementById('btn-mqtt-disconnect').style.display = 'none';
+        localStorage.removeItem('mqttRoom');
     }
 
     function closeEditor() { document.getElementById('editor-modal').style.display = 'none';
