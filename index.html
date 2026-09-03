@@ -274,7 +274,7 @@
     let scrollInterval = null, isScrolling = false, metroInterval = null, isMetroActive = false;
     let currentFontSize = 18;
     let currentBPM = 120;
-    let mqttClient = null, isMaster = false, mqttTopic = "";
+    let mqttClient = null, isMaster = false, mqttTopic = "", heartbeatInterval = null;
 
     document.addEventListener('DOMContentLoaded', () => {
         updateChordStyleButton();
@@ -704,12 +704,39 @@
         mqttTopic = "muzycznik_sync_2025/" + roomCode; 
         document.getElementById('mqtt-status-text').textContent = "Łączenie...";
         if (mqttClient) mqttClient.end();
+        if (heartbeatInterval) {
+            clearInterval(heartbeatInterval);
+            heartbeatInterval = null;
+        }
         mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
         mqttClient.on('connect', () => {
             document.getElementById('conn-status-dot').classList.add('connected');
             document.getElementById('mqtt-status-text').textContent = isMaster ? "LIDER: Aktywny" : "SŁUCHACZ: Aktywny";
-            if (!isMaster) mqttClient.subscribe(mqttTopic);
-            else broadcastState();
+            if (!isMaster) {
+                mqttClient.subscribe(mqttTopic);
+            } else {
+                broadcastState();
+                if (heartbeatInterval) clearInterval(heartbeatInterval);
+                heartbeatInterval = setInterval(() => {
+                    broadcastState();
+                }, 4000); // Heartbeat co 4 sekundy
+            }
+        });
+        mqttClient.on('close', () => {
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+                heartbeatInterval = null;
+            }
+            document.getElementById('conn-status-dot').classList.remove('connected');
+            document.getElementById('mqtt-status-text').textContent = "Rozłączono";
+        });
+        mqttClient.on('error', (err) => {
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+                heartbeatInterval = null;
+            }
+            console.error("MQTT Error:", err);
+            document.getElementById('mqtt-status-text').textContent = "Błąd połączenia";
         });
         mqttClient.on('message', (topic, message) => {
             if (!isMaster && topic === mqttTopic) {
