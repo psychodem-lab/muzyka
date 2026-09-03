@@ -208,10 +208,7 @@
                 <button onclick="changeTrans(1)" class="btn-icon"><i class="fas fa-plus"></i></button>
             </div>
 
-            <div class="control-group">
-                <button id="btn-scroll-toggle" onclick="toggleScroll()" class="btn-icon"><i class="fas fa-play"></i></button>
-                <input type="range" id="scroll-speed" min="1" max="75" value="10" style="width:50px;">
-            </div>
+            <button id="btn-scroll-toggle" onclick="toggleScroll()" class="btn-icon" title="Przewijanie"><i class="fas fa-play"></i></button>
             <button onclick="toggleMetronome()" id="btn-metro-toggle" class="btn-icon"><i class="fas fa-drum"></i></button>
             <button onclick="toggleFullscreen()" id="btn-fullscreen-toggle" class="btn-icon" title="Pełny ekran"><i class="fas fa-expand"></i></button>
             <span id="bar-sync-dot" onclick="onBarDotClick()" title="Status synchronizacji (kliknij, aby połączyć jako słuchacz)" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:red; margin:0 8px; cursor:pointer; vertical-align:middle;"></span>
@@ -253,6 +250,8 @@
         <button onclick="resetFromServer()" style="background:#6f42c1; color:white;">Resetuj z serwera</button>
         <button onclick="toggleAdvancedSettings()" id="btn-advanced-toggle" style="background:rgba(0,0,0,0.05); font-weight:bold;">⚙️ Zaawansowane ▼</button>
         <div id="advanced-settings-container" style="display:none; flex-direction:column; gap:8px; margin-top:5px;">
+            <div style="font-size:12px; font-weight:bold;">Szybkość przewijania:</div>
+            <input type="range" id="scroll-speed" min="1" max="75" value="10" style="width:100%; box-sizing:border-box;">
             <button onclick="toggleChordsDisplay()" id="btn-toggle-chords">Ukryj akordy</button>
             <button onclick="toggleChordStyle()" id="btn-chord-style">Styl: Polski (H)</button>
             <button onclick="startEditCurrent()">Edytuj piosenkę</button>
