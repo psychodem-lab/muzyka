@@ -249,6 +249,7 @@
         </div>
 
         <hr style="opacity:0.2">
+        <button onclick="resetFromServer()" style="background:#dc3545; color:white;">Resetuj z serwera</button>
         <button onclick="toggleAdvancedSettings()" id="btn-advanced-toggle" style="background:rgba(0,0,0,0.05); font-weight:bold;">⚙️ Zaawansowane ▼</button>
         <div id="advanced-settings-container" style="display:none; flex-direction:column; gap:8px; margin-top:5px;">
             <button onclick="toggleChordsDisplay()" id="btn-toggle-chords">Ukryj akordy</button>
@@ -259,7 +260,6 @@
             <input type="file" id="import-file" style="display:none" onchange="importJSON(this)">
             <button onclick="exportJSON()">Pobierz JSON</button>
             <button onclick="exportAllJPG()" style="background:var(--accent-success); color:white;">Eksport JPG</button>
-            <button onclick="resetFromServer()" style="background:#dc3545; color:white;">Resetuj z serwera</button>
         </div>
     </div>
 </div>
