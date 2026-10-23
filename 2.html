@@ -593,36 +593,6 @@
     });
     // ===== PLAYLIST FUNCTIONS =====
 
-    function showNewPlaylistInput() {
-        document.getElementById('new-playlist-name').focus();
-    }
-
-    function createNewPlaylist() {
-        const nameInput = document.getElementById('new-playlist-name');
-        const name = nameInput.value.trim();
-        if (!name) return alert("Wpisz nazwę playlisty!");
-        if (playlists[name]) return alert("Playlista o tej nazwie już istnieje!");
-        playlists[name] = [];
-        savePlaylists();
-        nameInput.value = "";
-        renderPlaylistList();
-        alert("Utworzono playlistę: " + name);
-    }
-
-    function addSongToPlaylist(songId) {
-        openAddToPlaylistModal(null, songId);
-    }
-
-    function removeSongFromPlaylist(songId) {
-        if (!currentPlaylist) return;
-        playlists[currentPlaylist] = playlists[currentPlaylist].filter(id => id !== songId);
-        savePlaylists();
-        renderPlaylistOptGroup();
-        renderList();
-    }
-
-    // ===== NEW PLAYLIST MODAL FUNCTIONS =====
-
     function renderPlaylistOptGroup() {
         const optgroup = document.getElementById('playlists-optgroup');
         if (!optgroup) return;
@@ -666,6 +636,20 @@
                 </div>
             </div>
         `).join('');
+    }
+
+    function openPlaylist(name) {
+        currentPlaylist = name;
+        currentLibrary = "playlist:" + name;
+        const songIds = playlists[name] || [];
+        const allSaved = [];
+        ["piosenki.json", "koledy.json", "lukasz.json", "ada.json"].forEach(key => {
+            const data = JSON.parse(localStorage.getItem('db_' + key) || '[]');
+            allSaved.push(...data);
+        });
+        allSongs = allSaved.filter(s => songIds.includes(s.id));
+        document.getElementById('collection-select').value = "playlist:" + encodeURIComponent(name);
+        renderList();
     }
 
     function openPlaylistFromModal(name) {
@@ -936,7 +920,7 @@
         currentPlaylist = null;
         currentLibrary = "piosenki.json";
         document.getElementById('collection-select').value = "piosenki.json";
-        renderList();
+        switchLibrary("piosenki.json");
     }
 
     // eslint-disable-next-line no-unused-vars
