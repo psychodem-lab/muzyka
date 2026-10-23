@@ -638,15 +638,15 @@
         `).join('');
     }
 
-    function openPlaylist(name) {
+    async function openPlaylist(name) {
         currentPlaylist = name;
         currentLibrary = "playlist:" + name;
         const songIds = playlists[name] || [];
         const allSaved = [];
-        ["piosenki.json", "koledy.json", "lukasz.json", "ada.json"].forEach(key => {
-            const data = JSON.parse(localStorage.getItem('db_' + key) || '[]');
+        for (const key of ["piosenki.json", "koledy.json", "lukasz.json", "ada.json"]) {
+            const data = await ensureDb(key);
             allSaved.push(...data);
-        });
+        }
         allSongs = allSaved.filter(s => songIds.includes(s.id));
         document.getElementById('collection-select').value = "playlist:" + encodeURIComponent(name);
         renderList();
@@ -757,6 +757,16 @@
         alert("Utworzono setlistę '" + name + "' i dodano do niej utwór.");
     }
 
+    // Upewnia się, że dane dla danego pliku JSON są w localStorage (pobiera z GitHub jeśli brak)
+    async function ensureDb(key) {
+        let saved = localStorage.getItem('db_' + key);
+        if (!saved) {
+            await loadFromServer(key);
+            saved = localStorage.getItem('db_' + key);
+        }
+        return saved ? JSON.parse(saved) : [];
+    }
+
     async function switchLibrary(lib) {
         currentLibrary = lib;
         currentPlaylist = null;
@@ -767,25 +777,23 @@
         }
         if (lib === "favorites") {
             const allSaved = [];
-            ["piosenki.json", "koledy.json", "lukasz.json", "ada.json"].forEach(key => {
-                const data = JSON.parse(localStorage.getItem('db_' + key) || '[]');
+            for (const key of ["piosenki.json", "koledy.json", "lukasz.json", "ada.json"]) {
+                const data = await ensureDb(key);
                 allSaved.push(...data);
-            });
+            }
             allSongs = allSaved.filter(s => favorites.includes(s.id));
             renderList();
         } else if (lib === "wszystkie.json") {
             // Połącz piosenki z wszystkich czterech plików JSON, zachowując oryginalne ID
             const allSaved = [];
-            ["piosenki.json", "koledy.json", "lukasz.json", "ada.json"].forEach(key => {
-                const data = JSON.parse(localStorage.getItem('db_' + key) || '[]');
+            for (const key of ["piosenki.json", "koledy.json", "lukasz.json", "ada.json"]) {
+                const data = await ensureDb(key);
                 allSaved.push(...data);
-            });
+            }
             // Upewnij się, że ID są unikalne - dodaj prefiks biblioteki jeśli brakuje
             allSongs = allSaved.map(s => {
                 const originalId = s.id || "";
-                // Jeśli ID nie ma prefiksu, dodaj go na podstawie źródła
                 if (!originalId.includes("_")) {
-                    // Próbujemy ustalić źródło na podstawie obecności w localStorage
                     s.id = "wszystkie_" + originalId;
                 }
                 return s;
@@ -806,7 +814,7 @@
             
             const data = await res.json();
             allSongs = data.map((s, i) => ({ ...s, id: fileName + "_" + i }));
-            saveToLocal();
+            localStorage.setItem('db_' + fileName, JSON.stringify(allSongs));
             renderList();
         } catch (e) { 
             console.error("Błąd ładowania:", e); 
