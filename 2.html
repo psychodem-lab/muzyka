@@ -215,6 +215,7 @@
                 <option value="piosenki.json">📁 Piosenki (Główna)</option>
                 <option value="koledy.json">🎄 Kolędy</option>
                 <option value="lukasz.json">👤 Inne</option>
+                <option value="ada.json">👤 Ada</option>
                 <option value="wszystkie.json">🌟 Wszystkie piosenki</option>
                 <option value="favorites">⭐ Ulubione</option>
             </select>
@@ -226,6 +227,18 @@
             <button id="btn-all" onclick="setSearch('')" style="flex:1; padding: 5px; font-size: 12px; background: #eee; color: #000;">Wszystkie</button>
         </div>
         <input type="text" id="search" placeholder="Szukaj..." style="width: 100%; padding:12px; margin-bottom:10px; border-radius: 20px; border: 1px solid var(--border-color); box-sizing: border-box;">
+        
+        <!-- PLAYLISTS SECTION -->
+        <div id="playlists-section" style="margin-top:20px; padding:10px; background:rgba(0,0,0,0.05); border-radius:8px; border:1px solid var(--border-color);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-weight:bold; font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Playlists</span>
+                <button onclick="showNewPlaylistInput()" style="font-size:10px; padding:4px 8px;">+ Nowa</button>
+            </div>
+            <input type="text" id="new-playlist-name" placeholder="Nazwa playlisty..." style="width:100%; padding:8px; margin-bottom:8px; border-radius:4px; border:1px solid var(--border-color); box-sizing:border-box; font-size:12px;" onkeypress="if(event.key==='Enter') createNewPlaylist()">
+            <button onclick="createNewPlaylist()" id="btn-create-playlist" style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; font-size:12px; margin-bottom:10px;">Utwórz playlistę</button>
+            <ul id="playlist-list" style="list-style:none; padding:0; margin:0;"></ul>
+        </div>
+        
         <ul id="song-list"></ul>
     </div>
 
@@ -306,6 +319,8 @@
     let vocalFilter = "";
     let favorites = JSON.parse(localStorage.getItem('favSongs') || '[]');
     let redSongs = JSON.parse(localStorage.getItem('redSongs') || '[]');
+    let playlists = JSON.parse(localStorage.getItem('playlists') || '{}');
+    let currentPlaylist = null;
     let currentId = null, lastId = null, transpose = 0, showChords = true;
     let chordStyle = localStorage.getItem('chordStyle') || 'PL'; 
     let scrollInterval = null, isScrolling = false, metroInterval = null, isMetroActive = false;
@@ -498,20 +513,108 @@
         document.getElementById('settings-menu').addEventListener('click', e => e.stopPropagation());
         if(localStorage.getItem('mqttRoom')) document.getElementById('mqtt-room-code').value = localStorage.getItem('mqttRoom');
     });
+    // ===== PLAYLIST FUNCTIONS =====
+
+    function showNewPlaylistInput() {
+        document.getElementById('new-playlist-name').focus();
+    }
+
+    function createNewPlaylist() {
+        const nameInput = document.getElementById('new-playlist-name');
+        const name = nameInput.value.trim();
+        if (!name) return alert("Wpisz nazwę playlisty!");
+        if (playlists[name]) return alert("Playlista o tej nazwie już istnieje!");
+        playlists[name] = [];
+        savePlaylists();
+        nameInput.value = "";
+        renderPlaylistList();
+        alert("Utworzono playlistę: " + name);
+    }
+
+    function deletePlaylist(name) {
+        if (!confirm("Czy na pewno usunąć playlistę '" + name + "'?")) return;
+        delete playlists[name];
+        savePlaylists();
+        renderPlaylistList();
+        if (currentPlaylist === name) {
+            currentPlaylist = null;
+            switchLibrary(currentLibrary || "piosenki.json");
+        }
+    }
+
+    function savePlaylists() {
+        localStorage.setItem('playlists', JSON.stringify(playlists));
+    }
+
+    function renderPlaylistList() {
+        const list = document.getElementById('playlist-list');
+        const names = Object.keys(playlists).sort();
+        list.innerHTML = names.map(name => `
+            <li style="margin-bottom:6px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span onclick="openPlaylist('${name}')" style="cursor:pointer; ${currentPlaylist === name ? 'color:var(--accent-blue); font-weight:bold;' : ''}">${name} <span style="font-size:10px; color:#999;">(${playlists[name].length})</span></span>
+                    <button onclick="deletePlaylist('${name}')" style="font-size:10px; padding:2px 6px; background:#dc3545; color:white; border:none; border-radius:3px; cursor:pointer;">Usuń</button>
+                </div>
+            </li>
+        `).join('');
+    }
+
+    function openPlaylist(name) {
+        currentPlaylist = name;
+        currentLibrary = name;
+        const songIds = playlists[name] || [];
+        // Find songs from all libraries that match these IDs
+        const allSaved = [];
+        ["piosenki.json", "koledy.json", "lukasz.json", "ada.json"].forEach(key => {
+            const data = JSON.parse(localStorage.getItem('db_' + key) || '[]');
+            allSaved.push(...data);
+        });
+        allSongs = allSaved.filter(s => songIds.includes(s.id));
+        document.getElementById('collection-select').value = name;
+        renderList();
+    }
+
+    function addSongToPlaylist(songId) {
+        if (!songId) return;
+        const names = Object.keys(playlists);
+        if (names.length === 0) {
+            return alert("Najpierw utwórz playlistę!");
+        }
+        // Show a simple selection - we'll use a modal-like approach with prompt
+        const name = prompt("Do której playlisty dodać piosenkę?\nDostępne: " + names.join(", "));
+        if (!name || !playlists[name]) return;
+        if (playlists[name].includes(songId)) {
+            alert("Ta piosenka jest już w tej playlistzie!");
+            return;
+        }
+        playlists[name].push(songId);
+        savePlaylists();
+        renderPlaylistList();
+        alert("Dodano do playlisty: " + name);
+    }
+
+    function removeSongFromPlaylist(songId) {
+        if (!currentPlaylist) return;
+        playlists[currentPlaylist] = playlists[currentPlaylist].filter(id => id !== songId);
+        savePlaylists();
+        openPlaylist(currentPlaylist);
+    }
+
     async function switchLibrary(lib) {
         currentLibrary = lib;
+        currentPlaylist = null;
         if (lib === "favorites") {
             const allSaved = [];
-            ["piosenki.json", "koledy.json", "lukasz.json"].forEach(key => {
+            ["piosenki.json", "koledy.json", "lukasz.json", "ada.json"].forEach(key => {
                 const data = JSON.parse(localStorage.getItem('db_' + key) || '[]');
                 allSaved.push(...data);
             });
             allSongs = allSaved.filter(s => favorites.includes(s.id));
             renderList();
         } else if (lib === "wszystkie.json") {
-            // Połącz piosenki z wszystkich trzech plików JSON, zachowując oryginalne ID
+            // Połącz piosenki z wszystkich czterech plików JSON, zachowując oryginalne ID
             const allSaved = [];
-            ["piosenki.json", "koledy.json", "lukasz.json"].forEach(key => {
+            ["piosenki.json", "koledy.json", "lukasz.json", "ada.json"].forEach(key => {
                 const data = JSON.parse(localStorage.getItem('db_' + key) || '[]');
                 allSaved.push(...data);
             });
@@ -580,6 +683,17 @@
     function renderList() {
         const term = document.getElementById('search').value.toLowerCase();
         const list = document.getElementById('song-list');
+        const playlistSection = document.getElementById('playlists-section');
+        const songList = document.getElementById('song-list');
+        
+        // Pokaż sekcję playlisty tylko gdy nie jesteśmy w widoku playlisty
+        if (currentPlaylist) {
+            playlistSection.style.display = 'none';
+        } else {
+            playlistSection.style.display = 'block';
+            renderPlaylistList();
+        }
+        
         let filtered = allSongs.filter(s => {
             const title = (s.title || "").toLowerCase();
             const artist = (s.artist || "").toLowerCase();
@@ -588,12 +702,39 @@
             if (vocalFilter === "female") return vocal === "female" || vocal === "both";
             return title.includes(term) || artist.includes(term);
         });         
-        list.innerHTML = filtered.sort((a,b)=>a.title.localeCompare(b.title)).map(s => `
-            <li onclick="selectSong('${s.id}')" class="${currentId === s.id ? 'selected' : ''}">
-                <span>${s.title}</span>
-                <i class="fas fa-star fav-star ${favorites.includes(s.id) ? 'active-yellow' : (redSongs.includes(s.id) ? 'active-red' : '')}" onclick="toggleFav(event, '${s.id}')"></i>
-            </li>
-        `).join('');
+        
+        // Jeśli jesteśmy w widoku playlisty, pokaż przycisk powrotu i usuń z playlisty
+        if (currentPlaylist) {
+            const backBtn = `<li style="background:var(--accent-blue); color:white; margin-bottom:8px;" onclick="backToLibrary()">
+                ◀ Powrót do biblioteki ("${currentPlaylist}")
+            </li>`;
+            
+            songList.innerHTML = backBtn + filtered.sort((a,b)=>a.title.localeCompare(b.title)).map(s => `
+                <li onclick="selectSong('${s.id}')" class="${currentId === s.id ? 'selected' : ''}" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="flex:1;">
+                        <span>${s.title}</span>
+                    </div>
+                    <div style="display:flex; gap:5px;">
+                        <i class="fas fa-star fav-star ${favorites.includes(s.id) ? 'active-yellow' : (redSongs.includes(s.id) ? 'active-red' : '')}" onclick="toggleFav(event, '${s.id}')"></i>
+                        <button onclick="event.stopPropagation(); removeSongFromPlaylist('${s.id}')" style="font-size:10px; padding:3px 6px; background:#dc3545; color:white; border:none; border-radius:3px; cursor:pointer;">Usuń</button>
+                    </div>
+                </li>
+            `).join('');
+        } else {
+            // Normalny widok biblioteki - dodaj przycisk "dodaj do playlisty" jeśli są playlisty
+            const playlistNames = Object.keys(playlists);
+            songList.innerHTML = filtered.sort((a,b)=>a.title.localeCompare(b.title)).map(s => `
+                <li onclick="selectSong('${s.id}')" class="${currentId === s.id ? 'selected' : ''}" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="flex:1;">
+                        <span>${s.title}</span>
+                    </div>
+                    <div style="display:flex; gap:5px;">
+                        <i class="fas fa-star fav-star ${favorites.includes(s.id) ? 'active-yellow' : (redSongs.includes(s.id) ? 'active-red' : '')}" onclick="toggleFav(event, '${s.id}')"></i>
+                        ${playlistNames.length > 0 ? `<button onclick="event.stopPropagation(); addSongToPlaylist('${s.id}')" style="font-size:10px; padding:3px 6px; background:var(--accent-blue); color:white; border:none; border-radius:3px; cursor:pointer;">+PL</button>` : ''}
+                    </div>
+                </li>
+            `).join('');
+        }
     }
 
     function selectSong(id, fromSync = false) {
@@ -620,6 +761,13 @@
         stopAutoScroll();
         stopMetronome();
         if (doPopState && history.state && history.state.view === 'song') history.back();
+    }
+
+    function backToLibrary() {
+        currentPlaylist = null;
+        currentLibrary = "piosenki.json";
+        document.getElementById('collection-select').value = "piosenki.json";
+        renderList();
     }
 
     // eslint-disable-next-line no-unused-vars
