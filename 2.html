@@ -139,6 +139,47 @@
         .fav-star.active-red { color: #dc3545;
         }
 
+        .btn-icon-subtle {
+            border: none;
+            background: transparent;
+            color: var(--text-main);
+            opacity: 0.45;
+            padding: 5px 7px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-icon-subtle:hover {
+            opacity: 1;
+            color: var(--accent-blue);
+            transform: scale(1.15);
+        }
+        .song-actions {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .playlist-modal-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            background: var(--bg-body);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .playlist-modal-item:hover {
+            border-color: var(--accent-blue);
+            background: rgba(0, 123, 255, 0.06);
+        }
+        .playlist-modal-item.in-playlist {
+            border-color: var(--accent-success);
+            background: rgba(40, 167, 69, 0.08);
+        }
+
         #editor-modal { display: none; position: fixed; top: 0; left: 0; width: 100%;
         height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;
         }
@@ -208,6 +249,43 @@
     </div>
 </div>
 
+<div id="playlists-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; justify-content:center; align-items:center;">
+    <div class="modal-content" style="max-width:480px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+            <h3 style="margin:0;"><i class="fas fa-list-ul" style="color:var(--accent-blue); margin-right:8px;"></i>Playlisty / Setlisty</h3>
+            <button onclick="closePlaylistsModal()" class="btn-icon" style="font-size:18px;"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div style="display:flex; gap:8px; margin-bottom:16px;">
+            <input type="text" id="new-playlist-input" placeholder="Nazwa nowej setlisty..." style="flex:1; padding:10px 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-body); color:var(--text-main); font-size:14px;" onkeypress="if(event.key==='Enter') createNewPlaylist()">
+            <button onclick="createNewPlaylist()" style="background:var(--accent-blue); color:white; font-weight:bold; padding:10px 18px; border:none; border-radius:8px; font-size:14px; cursor:pointer;">+ Utwórz</button>
+        </div>
+        
+        <div style="font-size:12px; font-weight:bold; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.5px;">Twoje setlisty:</div>
+        <div id="playlists-manager-list" style="max-height:50vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+</div>
+
+<div id="add-to-playlist-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2050; justify-content:center; align-items:center;">
+    <div class="modal-content" style="max-width:440px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+            <div>
+                <h3 style="margin:0; font-size:16px;"><i class="fas fa-list-ul" style="color:var(--accent-blue); margin-right:6px;"></i>Zarządzaj w setlistach</h3>
+                <div id="add-to-pl-song-title" style="font-size:13px; color:var(--text-muted); margin-top:3px; font-weight:bold;"></div>
+            </div>
+            <button onclick="closeAddToPlaylistModal()" class="btn-icon" style="font-size:18px;"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Kliknij setlistę, aby dodać lub usunąć utwór:</div>
+        <div id="add-to-pl-list" style="max-height:45vh; overflow-y:auto; margin-bottom:14px; display:flex; flex-direction:column; gap:6px;"></div>
+        
+        <div style="border-top:1px solid var(--border-color); padding-top:12px; display:flex; gap:8px;">
+            <input type="text" id="quick-new-pl-name" placeholder="+ Nowa setlista..." style="flex:1; padding:9px 12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-body); color:var(--text-main); font-size:13px;" onkeypress="if(event.key==='Enter') createAndAddSongToPlaylist()">
+            <button onclick="createAndAddSongToPlaylist()" style="background:var(--accent-blue); color:white; font-size:13px; font-weight:bold; padding:9px 14px; border:none; border-radius:6px; cursor:pointer;">Dodaj</button>
+        </div>
+    </div>
+</div>
+
 <div id="app-container">
     <div id="sidebar">
         <div class="sidebar-header">
@@ -218,6 +296,7 @@
                 <option value="ada.json">👤 Ada</option>
                 <option value="wszystkie.json">🌟 Wszystkie piosenki</option>
                 <option value="favorites">⭐ Ulubione</option>
+                <optgroup id="playlists-optgroup" label="📋 Setlisty / Playlisty"></optgroup>
             </select>
             <button class="btn-icon" onclick="openSettings(event)"><i class="fas fa-cog"></i></button>
         </div>
@@ -227,17 +306,6 @@
             <button id="btn-all" onclick="setSearch('')" style="flex:1; padding: 5px; font-size: 12px; background: #eee; color: #000;">Wszystkie</button>
         </div>
         <input type="text" id="search" placeholder="Szukaj..." style="width: 100%; padding:12px; margin-bottom:10px; border-radius: 20px; border: 1px solid var(--border-color); box-sizing: border-box;">
-        
-        <!-- PLAYLISTS SECTION -->
-        <div id="playlists-section" style="margin-top:20px; padding:10px; background:rgba(0,0,0,0.05); border-radius:8px; border:1px solid var(--border-color);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span style="font-weight:bold; font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Playlists</span>
-                <button onclick="showNewPlaylistInput()" style="font-size:10px; padding:4px 8px;">+ Nowa</button>
-            </div>
-            <input type="text" id="new-playlist-name" placeholder="Nazwa playlisty..." style="width:100%; padding:8px; margin-bottom:8px; border-radius:4px; border:1px solid var(--border-color); box-sizing:border-box; font-size:12px;" onkeypress="if(event.key==='Enter') createNewPlaylist()">
-            <button onclick="createNewPlaylist()" id="btn-create-playlist" style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; font-size:12px; margin-bottom:10px;">Utwórz playlistę</button>
-            <ul id="playlist-list" style="list-style:none; padding:0; margin:0;"></ul>
-        </div>
         
         <ul id="song-list"></ul>
     </div>
@@ -254,6 +322,7 @@
 
             <button id="btn-scroll-toggle" onclick="toggleScroll()" class="btn-icon" title="Przewijanie"><i class="fas fa-play"></i></button>
             <button onclick="toggleMetronome()" id="btn-metro-toggle" class="btn-icon"><i class="fas fa-drum"></i></button>
+            <button onclick="openAddToPlaylistModal(event, currentId)" class="btn-icon" title="Dodaj do setlisty"><i class="fas fa-list-ul"></i></button>
             <span id="bar-sync-dot" onclick="onBarDotClick()" title="Status synchronizacji (kliknij, aby połączyć jako słuchacz)" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:red; margin:0 8px; cursor:pointer; vertical-align:middle;"></span>
             <div style="flex-grow: 1;"></div>
             <button class="btn-icon" onclick="openSettings(event)"><i class="fas fa-cog"></i></button>
@@ -291,6 +360,7 @@
         </div>
 
         <hr style="opacity:0.2">
+        <button onclick="openPlaylistsModal()" style="background:#0284c7; color:white; font-weight:bold;"><i class="fas fa-list-ul"></i> Playlisty / Setlisty</button>
         <button onclick="resetFromServer()" style="background:#6f42c1; color:white;">Resetuj z serwera</button>
         <button onclick="toggleAdvancedSettings()" id="btn-advanced-toggle" style="background:rgba(0,0,0,0.05); font-weight:bold;">⚙️ Zaawansowane ▼</button>
         <div id="advanced-settings-container" style="display:none; flex-direction:column; gap:8px; margin-top:5px;">
@@ -344,6 +414,13 @@
 
         document.getElementById('chord-modal').addEventListener('click', function(e) {
             if (e.target === this) closeChordModal();
+        });
+
+        document.getElementById('playlists-modal').addEventListener('click', function(e) {
+            if (e.target === this) closePlaylistsModal();
+        });
+        document.getElementById('add-to-playlist-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeAddToPlaylistModal();
         });
 
         const captureArea = document.getElementById('song-capture-area');
@@ -510,6 +587,7 @@
         selector.onchange = (e) => switchLibrary(e.target.value);
         document.getElementById('search').oninput = () => { updateFilterButtons(); renderList(); };
         updateFilterButtons();
+        renderPlaylistOptGroup();
         document.getElementById('settings-menu').addEventListener('click', e => e.stopPropagation());
         if(localStorage.getItem('mqttRoom')) document.getElementById('mqtt-room-code').value = localStorage.getItem('mqttRoom');
     });
@@ -531,11 +609,76 @@
         alert("Utworzono playlistę: " + name);
     }
 
-    function deletePlaylist(name) {
-        if (!confirm("Czy na pewno usunąć playlistę '" + name + "'?")) return;
+    function addSongToPlaylist(songId) {
+        openAddToPlaylistModal(null, songId);
+    }
+
+    function removeSongFromPlaylist(songId) {
+        if (!currentPlaylist) return;
+        playlists[currentPlaylist] = playlists[currentPlaylist].filter(id => id !== songId);
+        savePlaylists();
+        renderPlaylistOptGroup();
+        renderList();
+    }
+
+    // ===== NEW PLAYLIST MODAL FUNCTIONS =====
+
+    function renderPlaylistOptGroup() {
+        const optgroup = document.getElementById('playlists-optgroup');
+        if (!optgroup) return;
+        const names = Object.keys(playlists).sort();
+        optgroup.innerHTML = names.map(name => `
+            <option value="playlist:${encodeURIComponent(name)}">${name} <span style="font-size:11px; color:#888;">(${playlists[name].length} utworów)</span></option>
+        `).join('');
+        optgroup.label = names.length > 0 ? "📋 Setlisty / Playlisty" : "📋 Setlisty / Playlisty (brak)";
+    }
+
+    function createNewPlaylist() {
+        const input = document.getElementById('new-playlist-input');
+        const name = input.value.trim();
+        if (!name) return alert("Wpisz nazwę setlisty!");
+        if (playlists[name]) return alert("Setlista o tej nazwie już istnieje!");
+        playlists[name] = [];
+        savePlaylists();
+        input.value = "";
+        renderPlaylistOptGroup();
+        renderPlaylistManagerList();
+        alert("Utworzono setlistę: " + name);
+    }
+
+    function renderPlaylistManagerList() {
+        const list = document.getElementById('playlists-manager-list');
+        if (!list) return;
+        const names = Object.keys(playlists).sort();
+        if (names.length === 0) {
+            list.innerHTML = `<div style="padding:20px; text-align:center; color:#888; font-size:13px;">Brak utworzonych setlist. Utwórz pierwszą powyżej!</div>`;
+            return;
+        }
+        list.innerHTML = names.map(name => `
+            <div class="playlist-modal-item">
+                <div style="flex:1;">
+                    <div style="font-weight:bold; font-size:15px; margin-bottom:2px;">${escapeHtml(name)}</div>
+                    <div style="font-size:12px; color:var(--text-muted);">${playlists[name].length} ${playlists[name].length === 1 ? "utwór" : "utwory"}</div>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button onclick="event.stopPropagation(); openPlaylistFromModal('${name}')" style="background:var(--accent-blue); color:white; border:none; border-radius:6px; padding:6px 14px; font-size:13px; font-weight:bold; cursor:pointer;">Otwórz</button>
+                    <button onclick="event.stopPropagation(); deletePlaylistFromModal('${name}')" style="background:#dc3545; color:white; border:none; border-radius:6px; padding:6px 12px; font-size:13px; cursor:pointer;">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function openPlaylistFromModal(name) {
+        closePlaylistsModal();
+        openPlaylist(name);
+    }
+
+    function deletePlaylistFromModal(name) {
+        if (!confirm("Czy na pewno usunąć setlistę '" + name + "'?")) return;
         delete playlists[name];
         savePlaylists();
-        renderPlaylistList();
+        renderPlaylistOptGroup();
+        renderPlaylistManagerList();
         if (currentPlaylist === name) {
             currentPlaylist = null;
             switchLibrary(currentLibrary || "piosenki.json");
@@ -546,63 +689,98 @@
         localStorage.setItem('playlists', JSON.stringify(playlists));
     }
 
-    function renderPlaylistList() {
-        const list = document.getElementById('playlist-list');
-        const names = Object.keys(playlists).sort();
-        list.innerHTML = names.map(name => `
-            <li style="margin-bottom:6px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span onclick="openPlaylist('${name}')" style="cursor:pointer; ${currentPlaylist === name ? 'color:var(--accent-blue); font-weight:bold;' : ''}">${name} <span style="font-size:10px; color:#999;">(${playlists[name].length})</span></span>
-                    <button onclick="deletePlaylist('${name}')" style="font-size:10px; padding:2px 6px; background:#dc3545; color:white; border:none; border-radius:3px; cursor:pointer;">Usuń</button>
-                </div>
-            </li>
-        `).join('');
+    function openPlaylistsModal() {
+        renderPlaylistManagerList();
+        document.getElementById('playlists-modal').style.display = 'flex';
     }
 
-    function openPlaylist(name) {
-        currentPlaylist = name;
-        currentLibrary = name;
-        const songIds = playlists[name] || [];
-        // Find songs from all libraries that match these IDs
-        const allSaved = [];
-        ["piosenki.json", "koledy.json", "lukasz.json", "ada.json"].forEach(key => {
-            const data = JSON.parse(localStorage.getItem('db_' + key) || '[]');
-            allSaved.push(...data);
-        });
-        allSongs = allSaved.filter(s => songIds.includes(s.id));
-        document.getElementById('collection-select').value = name;
-        renderList();
+    function closePlaylistsModal() {
+        document.getElementById('playlists-modal').style.display = 'none';
     }
 
-    function addSongToPlaylist(songId) {
+    function openAddToPlaylistModal(e, songId) {
+        if (e) e.stopPropagation();
         if (!songId) return;
-        const names = Object.keys(playlists);
+        const song = allSongs.find(s => s.id === songId) || {};
+        document.getElementById('add-to-pl-song-title').textContent = (song.title || "Utwór") + " — " + (song.artist || "");
+        renderAddToPlaylistList(songId);
+        document.getElementById('add-to-playlist-modal').style.display = 'flex';
+        document.getElementById('quick-new-pl-name').dataset.songId = songId;
+    }
+
+    function closeAddToPlaylistModal() {
+        document.getElementById('add-to-playlist-modal').style.display = 'none';
+    }
+
+    function renderAddToPlaylistList(songId) {
+        const list = document.getElementById('add-to-pl-list');
+        if (!list) return;
+        const names = Object.keys(playlists).sort();
         if (names.length === 0) {
-            return alert("Najpierw utwórz playlistę!");
-        }
-        // Show a simple selection - we'll use a modal-like approach with prompt
-        const name = prompt("Do której playlisty dodać piosenkę?\nDostępne: " + names.join(", "));
-        if (!name || !playlists[name]) return;
-        if (playlists[name].includes(songId)) {
-            alert("Ta piosenka jest już w tej playlistzie!");
+            list.innerHTML = `<div style="padding:20px; text-align:center; color:#888; font-size:13px;">Brak utworzonych setlist. Utwórz nową poniżej!</div>`;
             return;
         }
-        playlists[name].push(songId);
-        savePlaylists();
-        renderPlaylistList();
-        alert("Dodano do playlisty: " + name);
+        list.innerHTML = names.map(name => {
+            const inPlaylist = playlists[name].includes(songId);
+            return `
+                <div class="playlist-modal-item ${inPlaylist ? 'in-playlist' : ''}" onclick="event.stopPropagation(); toggleSongInPlaylist('${name}', '${songId}')">
+                    <div style="flex:1;">
+                        <div style="font-weight:bold; font-size:14px; margin-bottom:2px;">${escapeHtml(name)}</div>
+                        <div style="font-size:12px; color:var(--text-muted);">${playlists[name].length} ${playlists[name].length === 1 ? "utwór" : "utwory"}</div>
+                    </div>
+                    <div style="font-size:13px; ${inPlaylist ? 'color:var(--accent-success); font-weight:bold;' : 'color:var(--text-muted);'}" title="${inPlaylist ? 'Utwór jest w tej setliście' : 'Kliknij, aby dodać'}">
+                        ${inPlaylist ? '✓ W setliście' : '+ Dodaj'}
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
-    function removeSongFromPlaylist(songId) {
-        if (!currentPlaylist) return;
-        playlists[currentPlaylist] = playlists[currentPlaylist].filter(id => id !== songId);
+    function toggleSongInPlaylist(name, songId) {
+        if (!playlists[name]) return;
+        const idx = playlists[name].indexOf(songId);
+        if (idx >= 0) {
+            playlists[name].splice(idx, 1);
+        } else {
+            playlists[name].push(songId);
+        }
         savePlaylists();
-        openPlaylist(currentPlaylist);
+        renderPlaylistOptGroup();
+        renderPlaylistManagerList();
+        const modalSongId = document.getElementById('quick-new-pl-name').dataset.songId;
+        if (modalSongId === songId) {
+            renderAddToPlaylistList(songId);
+        }
+    }
+
+    function createAndAddSongToPlaylist() {
+        const input = document.getElementById('quick-new-pl-name');
+        const songId = input.dataset.songId;
+        if (!songId) return alert("Brak utworu do dodania!");
+        const name = input.value.trim();
+        if (!name) return alert("Wpisz nazwę setlisty!");
+        if (playlists[name]) {
+            alert("Setlista o tej nazwie już istnieje!");
+            return;
+        }
+        playlists[name] = [songId];
+        savePlaylists();
+        input.value = "";
+        input.dataset.songId = "";
+        renderPlaylistOptGroup();
+        renderPlaylistManagerList();
+        closeAddToPlaylistModal();
+        alert("Utworzono setlistę '" + name + "' i dodano do niej utwór.");
     }
 
     async function switchLibrary(lib) {
         currentLibrary = lib;
         currentPlaylist = null;
+        if (lib.startsWith("playlist:")) {
+            const name = decodeURIComponent(lib.substring("playlist:".length));
+            openPlaylist(name);
+            return;
+        }
         if (lib === "favorites") {
             const allSaved = [];
             ["piosenki.json", "koledy.json", "lukasz.json", "ada.json"].forEach(key => {
@@ -683,16 +861,6 @@
     function renderList() {
         const term = document.getElementById('search').value.toLowerCase();
         const list = document.getElementById('song-list');
-        const playlistSection = document.getElementById('playlists-section');
-        const songList = document.getElementById('song-list');
-        
-        // Pokaż sekcję playlisty tylko gdy nie jesteśmy w widoku playlisty
-        if (currentPlaylist) {
-            playlistSection.style.display = 'none';
-        } else {
-            playlistSection.style.display = 'block';
-            renderPlaylistList();
-        }
         
         let filtered = allSongs.filter(s => {
             const title = (s.title || "").toLowerCase();
@@ -703,34 +871,35 @@
             return title.includes(term) || artist.includes(term);
         });         
         
-        // Jeśli jesteśmy w widoku playlisty, pokaż przycisk powrotu i usuń z playlisty
+        // Jeśli jesteśmy w widoku playlisty, pokaż nagłówek i czyste ikony
         if (currentPlaylist) {
-            const backBtn = `<li style="background:var(--accent-blue); color:white; margin-bottom:8px;" onclick="backToLibrary()">
-                ◀ Powrót do biblioteki ("${currentPlaylist}")
+            const headerBadge = `<li style="background:var(--accent-blue); color:white; font-weight:bold; padding:8px 16px; border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                📋 Setlista: ${escapeHtml(currentPlaylist)} <span style="font-size:12px; opacity:0.9;">(${filtered.length} utworów)</span>
+                <button onclick="event.stopPropagation(); backToLibrary()" style="background:rgba(255,255,255,0.2); color:white; border:none; border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer;">Powrót</button>
             </li>`;
             
-            songList.innerHTML = backBtn + filtered.sort((a,b)=>a.title.localeCompare(b.title)).map(s => `
+            songList.innerHTML = headerBadge + filtered.sort((a,b)=>a.title.localeCompare(b.title)).map(s => `
                 <li onclick="selectSong('${s.id}')" class="${currentId === s.id ? 'selected' : ''}" style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="flex:1;">
                         <span>${s.title}</span>
                     </div>
-                    <div style="display:flex; gap:5px;">
+                    <div class="song-actions" style="gap:5px;">
                         <i class="fas fa-star fav-star ${favorites.includes(s.id) ? 'active-yellow' : (redSongs.includes(s.id) ? 'active-red' : '')}" onclick="toggleFav(event, '${s.id}')"></i>
-                        <button onclick="event.stopPropagation(); removeSongFromPlaylist('${s.id}')" style="font-size:10px; padding:3px 6px; background:#dc3545; color:white; border:none; border-radius:3px; cursor:pointer;">Usuń</button>
+                        <i class="fas fa-trash-alt btn-icon-subtle" style="color:#dc3545;" onclick="event.stopPropagation(); removeSongFromPlaylist('${s.id}')" title="Usuń z tej setlisty"></i>
                     </div>
                 </li>
             `).join('');
         } else {
-            // Normalny widok biblioteki - dodaj przycisk "dodaj do playlisty" jeśli są playlisty
+            // Normalny widok biblioteki - dodaj ikonę dodawania do setlisty
             const playlistNames = Object.keys(playlists);
             songList.innerHTML = filtered.sort((a,b)=>a.title.localeCompare(b.title)).map(s => `
                 <li onclick="selectSong('${s.id}')" class="${currentId === s.id ? 'selected' : ''}" style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="flex:1;">
                         <span>${s.title}</span>
                     </div>
-                    <div style="display:flex; gap:5px;">
+                    <div class="song-actions">
+                        <i class="fas fa-list-ul btn-icon-subtle" onclick="event.stopPropagation(); openAddToPlaylistModal(event, '${s.id}')" title="Dodaj do setlisty"></i>
                         <i class="fas fa-star fav-star ${favorites.includes(s.id) ? 'active-yellow' : (redSongs.includes(s.id) ? 'active-red' : '')}" onclick="toggleFav(event, '${s.id}')"></i>
-                        ${playlistNames.length > 0 ? `<button onclick="event.stopPropagation(); addSongToPlaylist('${s.id}')" style="font-size:10px; padding:3px 6px; background:var(--accent-blue); color:white; border:none; border-radius:3px; cursor:pointer;">+PL</button>` : ''}
                     </div>
                 </li>
             `).join('');
