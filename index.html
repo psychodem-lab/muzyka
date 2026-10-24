@@ -502,27 +502,47 @@
         currentLibrary = lib;
         if (lib === "favorites") {
             const allSaved = [];
-            ["piosenki.json", "koledy.json", "lukasz.json"].forEach(key => {
+            ["piosenki.json", "koledy.json", "lukasz.json", "ada.json"].forEach(key => {
                 const data = JSON.parse(localStorage.getItem('db_' + key) || '[]');
                 allSaved.push(...data);
             });
             allSongs = allSaved.filter(s => favorites.includes(s.id));
             renderList();
         } else {
-            const saved = localStorage.getItem('db_' + lib);
-            if (saved) { allSongs = JSON.parse(saved); renderList(); } 
-            else { await loadFromServer(lib); }
+            // Obsługa pojedynczego pliku lub wielu plików oddzielonych przecinkami (np. "lukasz.json,ada.json")
+            const files = lib.split(',').map(f => f.trim());
+            allSongs = [];
+            let allFromLocal = true;
+            for (const file of files) {
+                const saved = localStorage.getItem('db_' + file);
+                if (saved) {
+                    allSongs.push(...JSON.parse(saved));
+                } else {
+                    allFromLocal = false;
+                }
+            }
+            if (!allFromLocal) {
+                await loadFromServer(lib);
+            } else {
+                renderList();
+            }
         }
     }
 
     async function loadFromServer(fileName) {
         try {
-            // Dodano parametr cache-busting (?_=[timestamp]) oraz wymuszenie braku cache (cache: "no-store")
-            const res = await fetch(`${fileName}?_=${Date.now()}`, { cache: "no-store" });
-            if (!res.ok) throw new Error(`Błąd sieci: ${res.status} ${res.statusText}`);
-            
-            const data = await res.json();
-            allSongs = data.map((s, i) => ({ ...s, id: fileName + "_" + i }));
+            // Obsługuje pojedynczy plik lub wiele plików oddzielonych przecinkami (np. "lukasz.json,ada.json")
+            const files = fileName.split(',').map(f => f.trim());
+            let allData = [];
+            for (const file of files) {
+                // Dodano parametr cache-busting (?_=[timestamp]) oraz wymuszenie braku cache (cache: "no-store")
+                const res = await fetch(`${file}?_=${Date.now()}`, { cache: "no-store" });
+                if (!res.ok) throw new Error(`Błąd sieci: ${res.status} ${res.statusText}`);
+                
+                const data = await res.json();
+                allData.push(...data.map((s, i) => ({ ...s, id: file + "_" + i, _source: file })));
+            }
+            allSongs = allData;
             saveToLocal();
             renderList();
         } catch (e) { 
@@ -531,7 +551,26 @@
         }
     }
 
-    function saveToLocal() { if (currentLibrary !== "favorites") localStorage.setItem('db_' + currentLibrary, JSON.stringify(allSongs));
+    function saveToLocal() { 
+        if (currentLibrary !== "favorites") {
+            const files = currentLibrary.split(',').map(f => f.trim());
+            if (files.length === 1) {
+                localStorage.setItem('db_' + currentLibrary, JSON.stringify(allSongs));
+            } else {
+                // Zapisz każdy plik osobno na podstawie pola _source (dodawanego podczas ładowania)
+                const bySource = {};
+                allSongs.forEach(s => {
+                    const src = s._source || files[0];
+                    if (!bySource[src]) bySource[src] = [];
+                    bySource[src].push(s);
+                });
+                files.forEach(file => {
+                    if (bySource[file]) {
+                        localStorage.setItem('db_' + file, JSON.stringify(bySource[file]));
+                    }
+                });
+            }
+        }
     }
     function setSearch(val) { vocalFilter = val; updateFilterButtons(); renderList();
     }
@@ -1006,7 +1045,8 @@
         }
 
         if(confirm("Czy na pewno? Spowoduje to utratę lokalnych zmian.")) { 
-            localStorage.removeItem('db_' + currentLibrary); 
+            const files = currentLibrary.split(',').map(f => f.trim());
+            files.forEach(file => localStorage.removeItem('db_' + file));
             await loadFromServer(currentLibrary);
             alert("Biblioteka została pomyślnie zresetowana z serwera!");
         } 
