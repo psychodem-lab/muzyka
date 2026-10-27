@@ -1,5 +1,41 @@
 [
   {
+    "id": "song_1793133797859",
+    "title": "Hulaj dusza",
+    "artist": "Kordian",
+    "vocal_type": "male",
+    "lyrics": "Za górami, za lasami, za dolinami\nŻyła sobie góralecka między szczytami\nPiękne oczka, dwa warkocze, usta czerwone\nKażdy chłopiec taką pannę chciałby za żonę\nOna jednak kawalerom jeszcze mówi pas\nMłodość musi się wyszumieć, póki na to czas\n\nRef.:\nHulaj dusza, tańczy ziemia, niech spełniają się marzenia\nPijmy dziś czerwone wino, niechaj syćkie smutki miną (2 x)\n\nZa górami, za lasami, za dolinami\nŻył wesoły, młody baciar między wierchami\nBył przystojny i robotny, chłop jak marzenie\nKażda jego mieć za męża miała życzenie\nLecz żeniaczce ten nasz baciar jeszcze mówi pas\nMłodość musi się wyszumieć, póki na to czas\n\nRef.:\nHulaj dusza, tańczy ziemia, niech spełniają się marzenia\nPijmy dziś czerwone wino, niechaj syćkie smutki miną (2 x)\n\nMłodość musi się wyszumieć, niczym młody las\nTańczmy i śpiewajmy razem, póki na to czas\n\nRef.:\nHulaj dusza, tańczy ziemia, niech spełniają się marzenia\nPijmy dziś czerwone wino, niechaj syćkie smutki miną (2 x)",
+    "chords": "{ref}\nd B F C\n{zw}\nC B d C\ng d B A",
+    "genre": "",
+    "notes": "",
+    "key": "",
+    "bpm": "158"
+  },
+  {
+    "id": "song_1793133543368",
+    "title": "Ze Lubi Jom ",
+    "artist": "Jafer",
+    "vocal_type": "male",
+    "lyrics": "1.Uwiedlo go dziywce\nJakos mo na imiy\nTajymnico jako mgła\nW Tatrzańskiej dolinie\n\nRef. Ze lubi jom\nA łona niy\nCy to tak pryndko skóńcy siy\nPod scytym Tatr, przysiyngniy Hań\nZe kochoł bedziy noc i dziyń\n\nI pyto jom\nA łona niy\nCy Bóg połoncy drógi dwie\nPod scytym Tatr, przysiyngniy Hań\nZe kochoł bedziy noc i dziyń\n\n\nW kóńcu siy zgodziyła\nImię powiydziała\nŁod tyj chwili był łun śniom\nGodoł jyj kochano\n\n\nRef. Ze lubi jom\nA łona niy\nCy to tak pryndko skóńcy siy\nPod scytym Tatr, przysiyngniy Hań\nZe kochoł bedziy noc i dziyń\n\nI pyto jom\nA łona niy\nCy Bóg połoncy drógi dwiy\nPod scytym Tatr, przysiyngniy Hań\nZe kochoł bedzie noc i dziyń\n\n\nRef. Ze kocho jom\na łona wiy\nZe Bóg poloncył drogi dwie\nPod scytym Tatr, przysiyngli Hań\nZe nie rozłoncom nigdy siy\n\nTyn dobry Bóg\nIch przywiód tu\nKa w holach słychać wiatru szum\nPod scytym Tatr, przysiyngli hań\nZe zawse bedom w sobie trwać",
+    "chords": "{zw}\nd H C d\n{ref}\nF g H F C",
+    "genre": "",
+    "notes": "",
+    "key": "",
+    "bpm": ""
+  },
+  {
+    "id": "song_1793132760263",
+    "title": "Hot Stuff",
+    "artist": "Donna Summer",
+    "vocal_type": "male",
+    "lyrics": "Sittin' here, eatin' my heart out waitin'\nwaitin' for some lover to call\ndialed about a thousand numbers lately\nalmost rang the phone off the wall\n\nLookin' for some hot stuff baby this evenin'\nI need some hot stuff baby tonight\nI want some hot stuff baby this evenin'\ngotta have some hot stuff\ngotta have some love tonight\nI need hot stuff\nI want some hot stuff\nI need hot stuff\n\nLookin' for a lover who needs another\ndon't want another night on my own\nwanna share my love with a warm blooded lover\nwanna bring a wild man back home\n\nGotta have some hot love baby this evenin'\nI need some hot stuff baby tonight\nI want some hot stuff baby this evenin'\ngotta have some lovin'\ngot to have a love tonight\nI need hot stuff\nhot love\nlookin' for hot love\n\nHot, hot, hot, hot stuff\nhot, hot, hot\nhot, hot, hot, hot stuff\nhot, hot, hot\n\nHow about some hot stuff baby this evenin'\nI need some hot stuff baby tonight\nlookin' for my hot stuff baby this evenin'\nI need some hot stuff baby tonight\nI want some hot stuff baby this evenin'\nI want some hot stuff baby tonight\n<div><br></div>",
+    "chords": "{intro}\ng F\n{zw}\ng F g\n{ref}\nc d g\n{przejście}\nD7+9 g7 B - c7 ",
+    "genre": "",
+    "notes": "",
+    "key": "",
+    "bpm": "120"
+  },
+  {
     "id": "song_1792826221988",
     "title": "Comment ca va",
     "artist": "The Shorts",
@@ -9,6 +45,6 @@
     "genre": "",
     "notes": "",
     "key": "",
-    "bpm": "130"
+    "bpm": ""
   }
 ]
