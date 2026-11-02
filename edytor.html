@@ -137,6 +137,8 @@
                 <option value="piosenki.json">📁 Piosenki (Główna)</option>
                 <option value="koledy.json">🎄 Kolędy</option>
                 <option value="lukasz.json">👤 Inne</option>
+                <option value="ada.json">👧 Ada</option>
+                <option value="all">📦 Wszystkie pliki JSON</option>
             </select>
             <button class="btn btn-secondary" style="width:100%; justify-content:center; margin-bottom:12px;" onclick="loadFromRepo()">📥 Pobierz z repo</button>
             <input type="text" id="searchInput" class="search-box" placeholder="Szukaj w bazie..." oninput="renderList()">
@@ -488,9 +490,41 @@
         a.click();
     }
 
-    function loadFromRepo() {
+    async function loadFromRepo() {
         const file = document.getElementById('repoFile').value;
-        const url = `https://raw.githubusercontent.com/psychodem-lab/muzyka/main/${file}`;
+        const baseUrl = `https://raw.githubusercontent.com/psychodem-lab/muzyka/main/`;
+
+        if (file === 'all') {
+            const files = ['piosenki.json', 'koledy.json', 'lukasz.json', 'ada.json'];
+            let allSongs = [];
+            const errors = [];
+
+            for (const f of files) {
+                try {
+                    const r = await fetch(baseUrl + f);
+                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                    const data = await r.json();
+                    if (Array.isArray(data)) {
+                        allSongs.push(...data);
+                    }
+                } catch (e) {
+                    errors.push(`„${f}”: ${e.message}`);
+                }
+            }
+
+            songs = allSongs;
+            currentIdx = -1;
+            document.getElementById('editorContainer').style.display = 'none';
+            renderList();
+            persist();
+
+            let msg = `Wczytano ${songs.length} piosenek ze wszystkich plików JSON.`;
+            if (errors.length) msg += `\n\nBłędy:\n${errors.join('\n')}`;
+            alert(msg);
+            return;
+        }
+
+        const url = baseUrl + file;
         fetch(url)
             .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
             .then(data => {
