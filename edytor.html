@@ -151,8 +151,9 @@
     <main class="main-content">
         <div class="top-bar">
             <h1 id="viewTitle">Wczytaj plik JSON</h1>
-            <div style="display:flex; gap:12px;">
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
                 <button class="btn btn-secondary" onclick="showCode()">📋 Kod JSON</button>
+                <button class="btn btn-secondary" onclick="showCodeCurrent()">📄 Kod JSON obecnej</button>
                 <button class="btn btn-primary" onclick="downloadJSON()">💾 Pobierz plik</button>
             </div>
         </div>
@@ -240,6 +241,7 @@
 <script>
     let songs = [];
     let currentIdx = -1;
+    let editSingleIdx = null; // null = edycja całej bazy, inaczej index pojedynczej piosenki
 
     window.onload = () => {
         const saved = localStorage.getItem('songStudio_data');
@@ -441,7 +443,15 @@
     }
 
     function showCode() {
+        editSingleIdx = null;
         document.getElementById('jsonViewer').textContent = JSON.stringify(songs, null, 2);
+        document.getElementById('codeModal').style.display = 'block';
+    }
+
+    function showCodeCurrent() {
+        if (currentIdx === -1) { alert("Najpierw wybierz piosenkę z listy."); return; }
+        editSingleIdx = currentIdx;
+        document.getElementById('jsonViewer').textContent = JSON.stringify(songs[currentIdx], null, 2);
         document.getElementById('codeModal').style.display = 'block';
     }
 
@@ -470,6 +480,21 @@
     function applyCode() {
         try {
             const data = JSON.parse(document.getElementById('jsonViewer').textContent);
+
+            if (editSingleIdx !== null) {
+                if (Array.isArray(data) || typeof data !== 'object' || data === null) {
+                    throw new Error("Dla pojedynczej piosenki kod musi być obiektem JSON (nie tablicą).");
+                }
+                songs[editSingleIdx] = data;
+                if (!songs[editSingleIdx].id) songs[editSingleIdx].id = "song_" + Date.now();
+                currentIdx = editSingleIdx;
+                load(currentIdx);
+                editSingleIdx = null;
+                persist();
+                alert(`Zastosowano edycję do piosenki „${songs[currentIdx].title || 'bez tytułu'}”.`);
+                return;
+            }
+
             if (!Array.isArray(data)) throw new Error("Plik JSON musi być tablicą utworów.");
             songs = data;
             currentIdx = -1;
