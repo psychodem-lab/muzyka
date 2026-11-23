@@ -227,6 +227,7 @@
         </div>
         <input type="text" id="search" placeholder="Szukaj..." style="width: 100%; padding:12px; margin-bottom:10px; border-radius: 20px; border: 1px solid var(--border-color); box-sizing: border-box;">
         <ul id="song-list"></ul>
+        <span id="clear-search" onclick="clearSearch()" style="display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #888; padding: 5px; user-select: none;">✕</span>
     </div>
 
     <div id="main-content">
@@ -493,7 +494,20 @@
         const selector = document.getElementById('collection-select');
         switchLibrary(selector.value);
         selector.onchange = (e) => switchLibrary(e.target.value);
-        document.getElementById('search').oninput = () => { updateFilterButtons(); renderList(); };
+        document.getElementById('search').oninput = function() {
+    document.getElementById('clear-search').style.display = this.value ? 'block' : 'none';
+    updateFilterButtons();
+    renderList();
+};
+
+function clearSearch() {
+    const input = document.getElementById('search');
+    input.value = '';
+    document.getElementById('clear-search').style.display = 'none';
+    updateFilterButtons();
+    renderList();
+    input.focus();
+}
         updateFilterButtons();
         document.getElementById('settings-menu').addEventListener('click', e => e.stopPropagation());
         if(localStorage.getItem('mqttRoom')) document.getElementById('mqtt-room-code').value = localStorage.getItem('mqttRoom');
