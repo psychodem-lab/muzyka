@@ -225,10 +225,12 @@
             <button id="btn-female" onclick="setSearch('female')" style="flex:1; padding: 5px; font-size: 12px;">♀ Żeński</button>
             <button id="btn-all" onclick="setSearch('')" style="flex:1; padding: 5px; font-size: 12px; background: #eee; color: #000;">Wszystkie</button>
         </div>
-        <input type="text" id="search" placeholder="Szukaj..." style="width: 100%; padding:12px; margin-bottom:10px; border-radius: 20px; border: 1px solid var(--border-color); box-sizing: border-box;">
-        <span id="clear-search" onclick="clearSearch()" style="display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #888; padding: 5px; user-select: none;">✕</span>
-        <ul id="song-list"></ul>
+        <div style="position: relative; margin-bottom: 10px;">
+            <input type="text" id="search" placeholder="Szukaj..." style="width: 100%; padding: 12px 38px 12px 14px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-sidebar); color: var(--text-main); box-sizing: border-box;">
+            <span id="clear-search" onclick="clearSearch()" style="display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: #888; padding: 5px; user-select: none;">✕</span>
         </div>
+        <ul id="song-list"></ul>
+    </div>
 
     <div id="main-content">
         <div id="controls-bar" style="display:none;">
@@ -495,23 +497,24 @@
         switchLibrary(selector.value);
         selector.onchange = (e) => switchLibrary(e.target.value);
         document.getElementById('search').oninput = function() {
-    document.getElementById('clear-search').style.display = this.value ? 'block' : 'none';
-    updateFilterButtons();
-    renderList();
-};
-
-function clearSearch() {
-    const input = document.getElementById('search');
-    input.value = '';
-    document.getElementById('clear-search').style.display = 'none';
-    updateFilterButtons();
-    renderList();
-    input.focus();
-}
+            document.getElementById('clear-search').style.display = this.value ? 'block' : 'none';
+            updateFilterButtons();
+            renderList();
+        };
         updateFilterButtons();
         document.getElementById('settings-menu').addEventListener('click', e => e.stopPropagation());
         if(localStorage.getItem('mqttRoom')) document.getElementById('mqtt-room-code').value = localStorage.getItem('mqttRoom');
     });
+
+    function clearSearch() {
+        const input = document.getElementById('search');
+        input.value = '';
+        document.getElementById('clear-search').style.display = 'none';
+        updateFilterButtons();
+        renderList();
+        input.focus();
+    }
+
     async function switchLibrary(lib) {
         currentLibrary = lib;
         if (lib === "favorites") {
