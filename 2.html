@@ -175,6 +175,13 @@ body.dark-mode{--text-notes:#5eead4}
 #active-notes-content{margin:0;min-width:0;font-size:calc(var(--lyrics-font-size)*.9);line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text-song)}
 .editor-field textarea.notes-input{height:84px;font-family:var(--font);font-size:15px}
 
+/* przypięte akordy i notatki */
+:root{--bar-h:60px}
+body.pin-top .pinned-block{position:sticky;top:var(--bar-h);z-index:20;max-height:42vh;max-height:42dvh;overflow-y:auto;overscroll-behavior:contain;
+  padding:10px 0 8px;background:var(--bg-song-area);box-shadow:0 10px 12px -10px rgba(0,0,0,.4)}
+body.pin-top .pinned-block>*{margin:0 0 8px}
+body.pin-top .pinned-block>*:last-child{margin-bottom:0}
+
 /* szklany pasek przewijania */
 :root{--sb-thumb:rgba(70,82,104,.30);--sb-thumb-hover:rgba(70,82,104,.52);--sb-edge:rgba(255,255,255,.55);--sb-glow:rgba(255,255,255,.35)}
 body.dark-mode{--sb-thumb:rgba(255,255,255,.20);--sb-thumb-hover:rgba(255,255,255,.38);--sb-edge:rgba(255,255,255,.22);--sb-glow:rgba(255,255,255,.12)}
@@ -316,6 +323,7 @@ body.dark-mode{--sb-thumb:rgba(255,255,255,.20);--sb-thumb-hover:rgba(255,255,25
                 <div class="set-label">Szybkość przewijania</div>
                 <input type="range" id="scroll-speed" min="1" max="75" value="10">
                 <button onclick="toggleChordsDisplay()" id="btn-toggle-chords">Ukryj akordy</button>
+                <button onclick="togglePinTop()" id="btn-pin-top" aria-pressed="false">Przypnij akordy i notatki: Wył.</button>
                 <button onclick="toggleChordStyle()" id="btn-chord-style">Styl: Polski (H)</button>
                 <button onclick="startEditCurrent()">Edytuj piosenkę</button>
                 <button onclick="startNewSong()">Dodaj nową</button>
@@ -340,6 +348,7 @@ body.dark-mode{--sb-thumb:rgba(255,255,255,.20);--sb-thumb-hover:rgba(255,255,25
     let favorites = JSON.parse(localStorage.getItem('favSongs') || '[]');
     let redSongs = JSON.parse(localStorage.getItem('redSongs') || '[]');
     let currentId = null, lastId = null, transpose = 0, showChords = true;
+    let pinTop = localStorage.getItem('pinTop') === '1';
     let chordStyle = localStorage.getItem('chordStyle') || 'PL'; 
     let scrollInterval = null, isScrolling = false, metroInterval = null, isMetroActive = false;
     let currentFontSize = 18;
@@ -353,6 +362,9 @@ body.dark-mode{--sb-thumb:rgba(255,255,255,.20);--sb-thumb-hover:rgba(255,255,25
 
     document.addEventListener('DOMContentLoaded', () => {
         updateChordStyleButton();
+        applyPinTop();
+        const bar = document.getElementById('controls-bar');
+        if (window.ResizeObserver) new ResizeObserver(() => document.documentElement.style.setProperty('--bar-h', bar.offsetHeight + 'px')).observe(bar);
         const savedDark = localStorage.getItem('darkMode');
         if (savedDark === '1' || (savedDark === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.body.classList.add('dark-mode');
         document.addEventListener('click', (e) => {
@@ -691,13 +703,15 @@ body.dark-mode{--sb-thumb:rgba(255,255,255,.20);--sb-thumb-hover:rgba(255,255,25
         if (!song) return;
         let html = `<div class="song-header"><h2>${song.title}</h2><h4>${song.artist || ''}</h4></div>`;
         const notes = notesToText(song.notes);
+        let pinned = '';
         if (notes) {
-            html += `<div class="notes-container"><i class="fas fa-sticky-note" aria-hidden="true"></i><div id="active-notes-content">${escapeHTML(notes)}</div></div>`;
+            pinned += `<div class="notes-container"><i class="fas fa-sticky-note" aria-hidden="true"></i><div id="active-notes-content">${escapeHTML(notes)}</div></div>`;
         }
         if (song.chords && showChords) {
             const tc = renderChordsPanel(song.chords);
-            html += `<div class="chords-container"><pre id="active-chords-content">${tc}</pre></div>`;
+            pinned += `<div class="chords-container"><pre id="active-chords-content">${tc}</pre></div>`;
         }
+        if (pinned) html += `<div class="pinned-block">${pinned}</div>`;
         const lyr = (song.lyrics || "").replace(/\[(.*?)\]/g, showChords ? (m, c) => {
             const tc = transposeText(c, transpose);
             return `<span class="inline-chord" onclick="showChordInfo(event, '${tc}')">${tc}</span>`;
@@ -746,6 +760,20 @@ body.dark-mode{--sb-thumb:rgba(255,255,255,.20);--sb-thumb-hover:rgba(255,255,25
         }
     }
     function openSettings(e) { e.stopPropagation(); document.getElementById('settings-menu').classList.toggle('active'); }
+    function applyPinTop() {
+        document.body.classList.toggle('pin-top', pinTop);
+        const btn = document.getElementById('btn-pin-top');
+        if (btn) {
+            btn.textContent = 'Przypnij akordy i notatki: ' + (pinTop ? 'Wł.' : 'Wył.');
+            btn.setAttribute('aria-pressed', pinTop);
+        }
+    }
+    function togglePinTop() {
+        pinTop = !pinTop;
+        localStorage.setItem('pinTop', pinTop ? '1' : '0');
+        applyPinTop();
+    }
+
     function toggleChordsDisplay() { showChords = !showChords; updateView();
     }
     function toggleDarkMode() { const on = document.body.classList.toggle('dark-mode'); localStorage.setItem('darkMode', on ? '1' : '0'); }
@@ -1108,6 +1136,8 @@ body.dark-mode{--sb-thumb:rgba(255,255,255,.20);--sb-thumb-hover:rgba(255,255,25
         const overlay = document.getElementById('progress-overlay');
         const countDisp = document.getElementById('progress-count');
         overlay.style.display = 'flex';
+        const wasPinned = document.body.classList.contains('pin-top');
+        document.body.classList.remove('pin-top');
         for(let i=0; i<allSongs.length; i++) {
             countDisp.textContent = `${i+1} / ${allSongs.length}`;
             selectSong(allSongs[i].id);
@@ -1119,6 +1149,7 @@ body.dark-mode{--sb-thumb:rgba(255,255,255,.20);--sb-thumb-hover:rgba(255,255,25
             link.click();
             await new Promise(r => setTimeout(r, 200));
         }
+        if (wasPinned) document.body.classList.add('pin-top');
         overlay.style.display = 'none';
     }
 </script>
