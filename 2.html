@@ -74,6 +74,10 @@ button:active{transform:scale(.97)}
 .search-box>i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
 #search{width:100%;min-height:46px;padding:0 42px 0 40px;border:1px solid var(--border-color);border-radius:999px;background:var(--surface-2);outline:none}
 #search:focus{border-color:var(--accent-blue);background:var(--bg-sidebar)}
+#search::-webkit-search-cancel-button,#search::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
+#clear-search{display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;line-height:34px;text-align:center;
+  border-radius:50%;cursor:pointer;color:var(--muted);user-select:none}
+#clear-search:hover{background:var(--tint)}
 
 #song-list{list-style:none;margin:0 -14px;padding:0 0 calc(14px + env(safe-area-inset-bottom));overflow-y:auto;flex:1}
 #song-list li{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:60px;padding:8px 8px 8px 17px;cursor:pointer;
@@ -254,6 +258,7 @@ body.dark-mode{--sb-thumb:rgba(255,255,255,.20);--sb-thumb-hover:rgba(255,255,25
         <div class="search-box">
             <i class="fas fa-search"></i>
             <input type="search" id="search" placeholder="Szukaj tytułu lub wykonawcy" autocomplete="off">
+            <span id="clear-search" onclick="clearSearch()" role="button" aria-label="Wyczyść wyszukiwanie">✕</span>
         </div>
         <ul id="song-list"></ul>
     </div>
@@ -524,6 +529,7 @@ body.dark-mode{--sb-thumb:rgba(255,255,255,.20);--sb-thumb-hover:rgba(255,255,25
         switchLibrary(selector.value);
         selector.onchange = (e) => switchLibrary(e.target.value);
         document.getElementById('search').oninput = function() {
+            document.getElementById('clear-search').style.display = this.value ? 'block' : 'none';
             updateFilterButtons();
             renderList();
         };
@@ -652,6 +658,15 @@ body.dark-mode{--sb-thumb:rgba(255,255,255,.20);--sb-thumb-hover:rgba(255,255,25
         renderList();
         document.getElementById('main-content').scrollTop = 0;
         if(!fromSync) broadcastState();
+    }
+
+    function clearSearch() {
+        const input = document.getElementById('search');
+        input.value = '';
+        document.getElementById('clear-search').style.display = 'none';
+        updateFilterButtons();
+        renderList();
+        input.focus();
     }
 
     function backToList(doPopState = true) {
